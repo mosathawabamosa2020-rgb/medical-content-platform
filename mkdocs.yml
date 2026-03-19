@@ -1,0 +1,10 @@
+site_name: Medical Content Platform - Developer Docs
+theme:
+  name: material
+nav:
+  - Home: docs/developer/index.md
+  - Architecture: docs/developer/architecture.md
+  - Services: docs/developer/services.md
+  - API: docs/developer/api-reference.md
+  - Setup: docs/developer/setup.md
+

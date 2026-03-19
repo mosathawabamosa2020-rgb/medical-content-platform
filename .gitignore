@@ -137,3 +137,22 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Project runtime artifacts
+.next-build/
+.prisma/
+.env*
+!.env.example
+!.env.local.example
+uploads/
+artifacts/
+data/
+benchmarks/
+archive/
+MedicalBot/
+prisma/dev.db
+prisma/dev.db-journal
+main.py
+example-com.png
+tmp_profile.js
+tmp_query_sections.js

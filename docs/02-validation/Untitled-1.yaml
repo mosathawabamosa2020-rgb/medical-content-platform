@@ -1,0 +1,776 @@
+
+══════════════════════════════════════════════════════════════
+# MASTER EXECUTION DIRECTIVE — MEDICAL CONTENT PLATFORM
+# Version: 2.0 | Date: 2026-03-18
+# Authority: Project Owner → Development Team (Codex)
+# Source of Truth: Verification Team (CodeRabbitAI) Blueprint + Group I Report
+# Project Path: C:\Users\mosat\medical-content-platform
+# Repository: https://github.com/mosathawabamosa2020-rgb/medical-content-platform
+# ══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 0: ROLE, AUTHORITY & EXECUTION PROTOCOL
+# ─────────────────────────────────────────────────────────────
+
+You are now operating as the full technical development team for this project.
+You have FULL read/write authority over all files in:
+  C:\Users\mosat\medical-content-platform
+
+EXECUTION PROTOCOL:
+  1. DO NOT ask questions before execution.
+  2. Read and audit ALL files in the project directory FIRST.
+  3. Execute ALL tasks listed below in the EXACT order specified.
+  4. After execution, produce a SINGLE comprehensive report (format in Section 99).
+  5. Place all questions for the verification team INSIDE the report, not before it.
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 1: MANDATORY FULL PROJECT AUDIT
+# ─────────────────────────────────────────────────────────────
+
+Before any modification, perform a thorough audit of every file and directory.
+Your audit must cover and your report must include:
+
+  1.1 PLATFORM NATURE:
+      - Detailed, evidence-based explanation of what this platform is.
+      - It is a SPECIALIZED SCIENTIFIC KNOWLEDGE SYSTEM for medical devices
+        across all hospital departments — NOT a CMS or blog.
+      - Architecture: Modular Monolith (Next.js + Prisma + PostgreSQL + pgvector).
+      - Sustainability-first: open-source defaults, no hard paid-API dependency.
+
+  1.2 DATABASE STRUCTURE:
+      - Describe every table, enum, relation, and index in prisma/schema.prisma.
+      - Confirm pgvector extension is enabled and vector columns exist on:
+        Reference, KnowledgeChunk, Section (1536-dim currently).
+      - Confirm bilingual FTS columns (fts_arabic, fts_english) on KnowledgeChunk.
+      - Confirm all migrations in prisma/migrations/ are valid and tracked.
+      - Core entities: User, Department, Device, DeviceModel, Manufacturer,
+        Reference, ReferenceFile, Section, KnowledgeChunk, VerificationLog,
+        AuditLog, GeneratedContent, PublishingTask, SourceRegistry,
+        ContentCategory, Tag, DeviceTag, ChunkTag, ReferenceTag,
+        KnowledgeRevision, ReviewTask, LearningPath, LearningPathItem,
+        Role, Permission, RolePermission, UserRole_.
+
+  1.3 SERVICES & FUNCTIONALITY:
+      For EACH service below, report: Fully Functional / Partially Implemented / Missing.
+      Provide file-path evidence for each determination.
+
+      - Taxonomy Service (departments/devices/models + lifecycle controls)
+      - Reference Service (upload, import, discovery ingest, dedup, logs)
+      - Discovery/Search Service (multi-source adapters: PubMed, FDA, Wikimedia,
+        Semantic Scholar, OpenAlex)
+      - Retrieval Service (vector search via pgvector on chunk embeddings)
+      - Verification Service (reference review + audit logs)
+      - Content Generation Service (grounded on verified sources only)
+      - Publishing/Scheduling Service (daily tasks per device)
+      - Health/Readiness Service (/api/health* and ops preflight)
+      - Settings/Governance Service (readiness summary, audit trail)
+      - Scientific Image Service (search + prompt generation)
+      - Storage Service (MinIO adapter at lib/storage/storageAdapter.ts)
+      - Queue Service (BullMQ + Redis at lib/queue/)
+      - Embedding Service (lib/embeddings/ — OpenAI Phase 1, bge-m3 Phase 2)
+
+  1.4 INTERFACES:
+      For EACH interface, report: Complete / In Progress / Missing.
+      Include file path, functional description, data linking, and design status.
+
+      - Main Portal (unified control center, sidebar navigation)
+      - Auth Interface (login, register, forgot-password)
+      - Dashboard (department/device-level indicators, cards, progress bars)
+      - Taxonomy Management (departments, devices, models CRUD)
+      - Reference Management (upload, link, processing status, review status)
+      - Scientific Verification (reading area, accept/reject/notes, completion %)
+      - Knowledge Base Search (departments → devices → tabbed detail view)
+      - Content Creation (daily tasks, device/tone selection, preview, publish)
+      - Ingestion Monitor
+      - Settings Interface
+      - Device Reference Upload UI
+
+  1.5 EXTERNAL SOURCES:
+      Confirm which source adapters exist under lib/sources/:
+      | Source             | API        | Key Required | Rate Limit       |
+      | PubMed E-utilities | Free       | No (optional)| 3 req/s (10+key) |
+      | Semantic Scholar   | Free       | Optional     | 100 req/5min     |
+      | OpenAlex           | Free       | No           | 100k req/day     |
+      | FDA Device Data    | Free       | No           | Per ToS          |
+      | Wikimedia          | Free       | No           | Per ToS          |
+
+  1.6 KNOWN BLOCKERS (from Group I Report — verify current status):
+      - TypeScript failures in: ingestion/import, scraper/start,
+        discovery/ingest, generate-post
+      - Auth/CSRF/rate-limit enforcement gaps in admin middleware
+      - Unauthenticated upload endpoint
+      - Untracked Prisma migrations for embedding changes
+      - ops:live-proof ECONNREFUSED (app not running during test)
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 2: COMPLETE VERIFICATION TEAM CONVERSATION — TASKS
+# ─────────────────────────────────────────────────────────────
+
+The following is the COMPLETE task list derived from the conversation between
+the project owner and the verification team (CodeRabbitAI). Execute every item
+that is not already completed. Verify items claimed as completed.
+
+# ── PHASE 0: CRITICAL BLOCKERS (Must be done FIRST) ────────
+
+TASK 0.1: .gitignore — Verify prisma/migrations/ is NOT excluded
+  - Open .gitignore
+  - Confirm NO line reads "prisma/migrations/"
+  - If found, REMOVE it
+  - Run: git add prisma/migrations/
+  - Evidence: show .gitignore content in report
+
+TASK 0.2: Fix Invalid SQL in Migrations
+  - Files:
+    prisma/migrations/202603140001_add_reference_embedding/migration.sql
+    prisma/migrations/202603140002_add_knowledgechunk_embedding/migration.sql
+    prisma/migrations/202603140003_add_section_embedding/migration.sql
+  - Fix: Replace ALL instances of ""Reference"" with "Reference"
+         Replace ALL instances of ""KnowledgeChunk"" with "KnowledgeChunk"
+         Replace ALL instances of ""Section"" with "Section"
+  - Verify: single pair of double quotes only
+  - ALSO: remove any BOM characters from these files
+
+TASK 0.3: Fix Missing `await` in Middleware
+  - Files:
+    lib/middleware/withAdminAuth.ts
+    lib/middleware/withReviewerOrAdminAuth.ts
+  - Fix: Add `await` before csrfProtection() and rateLimiter() calls
+  - WRONG:  csrfProtection(req, res);   // Promise never awaited
+  - CORRECT: await csrfProtection(req, res);
+  - Apply to BOTH middleware files
+
+TASK 0.4: Secure /api/references/upload
+  - File: pages/api/references/upload.ts
+  - Add at TOP of handler, before any file processing:
+    ```typescript
+    import { getServerSession } from 'next-auth/next';
+    import { authOptions } from '@/pages/api/auth/[...nextauth]';
+    
+    const session = await getServerSession(req, res, authOptions);
+    if (!session || !['ADMIN', 'EDITOR'].includes(session.user.role as string)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    ```
+
+TASK 0.5: Fix TypeScript Errors — Missing authOptions (3 files)
+  - Files:
+    pages/api/references/discovery/ingest.ts
+    pages/api/content/generate-post.ts
+    pages/api/admin/scraper/start.ts
+  - Fix in ALL three:
+    ```typescript
+    // WRONG:
+    const session = await getServerSession(req, res);
+    // CORRECT:
+    import { authOptions } from '@/pages/api/auth/[...nextauth]';
+    const session = await getServerSession(req, res, authOptions);
+    ```
+
+TASK 0.6: Fix deviceId Type Mismatch
+  - File: pages/api/admin/ingestion/import.ts
+  - Check prisma/schema.prisma → model Device { id ... }
+  - If Device.id is String (cuid): const deviceId = req.body.deviceId as string;
+  - If Device.id is Int: const deviceId = parseInt(req.body.deviceId as string, 10);
+  - Document which type was found in report
+
+TASK 0.7: Remove Stray Non-ASCII Character
+  - File: pages/api/content/generate-post.ts
+  - Open file, enable whitespace rendering, find and delete any non-ASCII char
+  - Save with UTF-8 encoding, no BOM
+
+TASK 0.8: Remove Nested/Duplicate Folders
+  - DELETE if they exist:
+    medical-content-platform/medical-content-platform/
+    _restore/
+  - Verify clean project root structure
+
+TASK 0.9: Verification Gate — ALL must pass before proceeding
+  - Run and confirm:
+    npm run typecheck     # MUST return 0 errors
+    npm run lint          # MUST return 0 errors
+    npx prisma migrate deploy  # MUST succeed
+    npx prisma generate        # MUST succeed
+    npm run ops:preflight      # MUST return OK
+    npm run build              # MUST succeed
+  - Record output of each command in report
+
+# ── PHASE 0 PUSH PREREQUISITES ─────────────────────────────
+
+TASK 0.10: Add TODO Markers to Legacy Scripts
+  - Files:
+    scripts/scrape_fda.js
+    scripts/scrape_fda_hardened.js
+  - Add at TOP of each file:
+    // TODO Phase-2: migrate to MinIO storageAdapter (lib/storage/storageAdapter.ts)
+  - These scripts still write to uploads/ — acceptable for Phase 1 per
+    verification team ruling (they are offline CLI tools, not API-facing)
+
+TASK 0.11: Run ops:live-proof (The Final Push Blocker)
+  - Procedure (EXACT ORDER):
+    Step 1: docker-compose up -d postgres redis minio
+    Step 2: docker-compose ps  (confirm all healthy)
+    Step 3: IN SEPARATE TERMINAL: npm run dev
+    Step 4: Wait for "ready - started server on 0.0.0.0:3000"
+    Step 5: IN ORIGINAL TERMINAL: npm run ops:live-proof
+  - This MUST pass. The previous ECONNREFUSED was because the app was not running.
+  - Record full output in report
+
+# ── PHASE 1: FOUNDATION ────────────────────────────────────
+
+TASK 1.1: VS Code Workspace — Create .vscode/extensions.json
+  ```json
+  {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "Prisma.prisma",
+      "ms-azuretools.vscode-docker",
+      "streetsidesoftware.code-spell-checker",
+      "usernamehw.errorlens",
+      "bradlc.vscode-tailwindcss",
+      "lokalise.i18n-ally",
+      "eamodio.gitlens",
+      "github.vscode-pull-request-github"
+    ]
+  }
+  ```
+
+TASK 1.2: VS Code Workspace — Create .vscode/settings.json
+  ```json
+  {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "files.eol": "\n",
+    "i18n-ally.locales": ["ar", "en"],
+    "i18n-ally.sourceLanguage": "ar"
+  }
+  ```
+
+TASK 1.3: Verify docker-compose.yml Contains ALL Services
+  Required services (add any missing):
+  - postgres (pgvector/pgvector:pg16) with healthcheck
+  - redis (redis:7-alpine) with healthcheck
+  - minio (minio/minio:latest) with console on 127.0.0.1:9001
+  - minio-init (minio/mc:latest) — creates buckets: references, processed, images
+  - app (Next.js via Dockerfile)
+  - worker (BullMQ worker via Dockerfile.worker)
+  Volumes: postgres_data, redis_data, minio_data
+
+TASK 1.4: Create .env.example (Complete Template)
+  Must include ALL of these sections:
+  - APPLICATION: NODE_ENV, NEXTAUTH_URL, NEXTAUTH_SECRET
+  - DATABASE: DATABASE_URL (postgresql://platform_user:platform_pass@localhost:5432/medical_platform)
+  - REDIS: REDIS_URL
+  - MINIO: MINIO_ENDPOINT, MINIO_USER, MINIO_PASSWORD, MINIO_BUCKET_REFERENCES,
+           MINIO_BUCKET_PROCESSED, MINIO_BUCKET_IMAGES
+  - AI PHASE 1: OPENAI_API_KEY, OPENAI_EMBEDDING_MODEL, OPENAI_EMBEDDING_DIMENSIONS (1536),
+                 OPENAI_GENERATION_MODEL
+  - AI PHASE 2 (commented): EMBEDDING_SERVICE_URL, EMBEDDING_MODEL (BAAI/bge-m3),
+                              EMBEDDING_DIMENSIONS (1024)
+  - EXTERNAL SOURCES: PUBMED_BASE_URL, PUBMED_API_KEY, SEMANTIC_SCHOLAR_KEY, OPENALEX_EMAIL
+  - SECURITY: CSRF_SECRET, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX_REQUESTS
+  - MONITORING (commented): PROMETHEUS_PORT, GRAFANA_PORT
+
+TASK 1.5: Verify/Update Prisma Schema to Canonical Version
+  Ensure prisma/schema.prisma includes ALL of these models with correct fields:
+  - Enums: UserRole, DeviceStatus, ReferenceStatus, ReviewStatus, ContentStatus,
+           PublishingTaskStatus, ChunkType, AudienceLevel, Language, SourceType
+  - Models: User, Department, Device, DeviceModel, Reference, ReferenceFile,
+            KnowledgeChunk, Section, KnowledgeRevision, ReviewTask, VerificationLog,
+            AuditLog, ContentCategory, GeneratedContent, PublishingTask,
+            SourceRegistry, Tag, DeviceTag, ReferenceTag, ChunkTag,
+            LearningPath, LearningPathItem, Role, Permission, RolePermission, UserRole_
+  - All soft-delete fields (deletedAt) where specified
+  - All indexes and unique constraints
+  - pgvector extension enabled
+  - Embedding columns as Unsupported("vector")? on Reference, KnowledgeChunk, Section
+  - Compare against the canonical schema provided by the verification team
+    (full schema is in the conversation above under "Phase 1.7")
+  - Run: npx prisma migrate dev --name schema_alignment (if changes needed)
+
+TASK 1.6: Verify Bilingual FTS + HNSW Migration
+  - File: prisma/migrations/202603170001_add_bilingual_fts/migration.sql
+  - Must contain:
+    - ALTER TABLE knowledge_chunks ADD COLUMN fts_arabic tsvector GENERATED ALWAYS AS...
+    - ALTER TABLE knowledge_chunks ADD COLUMN fts_english tsvector GENERATED ALWAYS AS...
+    - GIN indexes: idx_kc_fts_ar, idx_kc_fts_en
+    - HNSW indexes: idx_kc_embedding_hnsw, idx_ref_embedding_hnsw, idx_sec_embedding_hnsw
+  - Migration name "202603170001_add_bilingual_fts" is APPROVED by verification team
+
+TASK 1.7: Verify MinIO Storage Adapter
+  - File: lib/storage/storageAdapter.ts
+  - Must use @aws-sdk/client-s3 with:
+    - forcePathStyle: true  (MANDATORY for MinIO)
+    - endpoint from process.env.MINIO_ENDPOINT
+    - Three buckets: references, processed, images
+  - Functions: uploadFile, downloadFile, deleteFile
+  - Confirm all API-facing upload paths use this adapter:
+    pages/api/references/upload.ts
+    pages/api/references/discovery/ingest.ts
+    pages/api/admin/file.ts
+    scripts/master_scraper.ts
+
+TASK 1.8: Create Dockerfile (Production)
+  ```dockerfile
+  FROM node:20.9-alpine AS base
+  WORKDIR /app
+  RUN apk add --no-cache libc6-compat
+
+  FROM base AS deps
+  COPY package*.json ./
+  RUN npm ci --only=production
+
+  FROM base AS builder
+  COPY package*.json ./
+  RUN npm ci
+  COPY . .
+  RUN npx prisma generate
+  RUN npm run build
+
+  FROM base AS runner
+  ENV NODE_ENV=production
+  COPY --from=deps /app/node_modules ./node_modules
+  COPY --from=builder /app/.next ./.next
+  COPY --from=builder /app/public ./public
+  COPY --from=builder /app/package.json ./package.json
+  COPY --from=builder /app/prisma ./prisma
+  EXPOSE 3000
+  CMD ["npm", "start"]
+  ```
+
+TASK 1.9: Create Dockerfile.worker
+  - For BullMQ worker process
+  - Same base image (node:20.9-alpine)
+  - Entry: node -r ts-node/register lib/workers/index.ts
+
+TASK 1.10: Setup Husky + lint-staged
+  - Run: npx husky init
+  - Create .husky/pre-commit: npx lint-staged
+  - Create .husky/pre-push: npm run typecheck
+  - Add to package.json:
+    ```json
+    "lint-staged": {
+      "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+      "*.{json,md,yml}": ["prettier --write"],
+      "prisma/schema.prisma": ["npx prisma format"]
+    }
+    ```
+
+TASK 1.11: Align package.json Scripts (Minimum Set for Phase 1)
+  These MUST exist and work:
+  ```json
+  {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
+    "ops:preflight": "ts-node scripts/ops-preflight.ts",
+    "ops:live-proof": "ts-node scripts/ops-live-proof.ts"
+  }
+  ```
+  Phase 2 scripts (add ONLY when underlying files exist):
+  workers:start, db:seed, db:studio, test, test:watch, test:coverage
+
+# ── PHASE 2: CORE SERVICES — BACKEND API ───────────────────
+
+TASK 2.1: Implement/Verify Layered Folder Structure
+  Confirm this structure exists (create missing directories/files):
+pages/api/
+auth/[...nextauth].ts
+health/index.ts, dependencies.ts, system.ts
+v1/                              ← NEW versioned API prefix
+admin/taxonomy/departments/[id].ts
+admin/taxonomy/devices/[id].ts
+admin/taxonomy/models/[id].ts
+admin/ingestion/import.ts, status.ts
+admin/scraper/start.ts, status.ts
+admin/reference/[id].ts
+admin/settings.ts
+admin/publishing/schedule.ts, tasks.ts
+references/upload.ts, query.ts
+references/discovery/ingest.ts
+content/generate.ts, generate-post.ts
+lib/
+db/prisma.ts
+services/
+taxonomy.service.ts
+reference.service.ts
+ingestion.service.ts
+chunk.service.ts
+embedding.service.ts
+review.service.ts
+content.service.ts
+publishing.service.ts
+image.service.ts
+search.service.ts
+audit.service.ts
+repositories/
+department.repo.ts
+device.repo.ts
+reference.repo.ts
+chunk.repo.ts
+content.repo.ts
+queue/
+index.ts
+processors/pdf.processor.ts
+processors/embedding.processor.ts
+processors/source-search.processor.ts
+workers/index.ts
+sources/
+pubmed.adapter.ts
+fda.adapter.ts
+wikimedia.adapter.ts
+semantic-scholar.adapter.ts
+openalex.adapter.ts
+source-registry.ts
+storage/storage.adapter.ts, storage.types.ts
+embeddings/embeddings.ts
+middleware/withAdminAuth.ts, withReviewerOrAdminAuth.ts, csrf.ts, rateLimiter.ts
+search/vector.search.ts, fts.search.ts, hybrid.search.ts
+utils/
+chunk-splitter.ts
+chunk-classifier.ts
+quality-scorer.ts
+retry.ts
+api-error-handler.ts
+
+TASK 2.2: Implement Quality Scoring Algorithm
+- File: lib/utils/quality-scorer.ts
+- Factors (total 100 points):
+  - Peer review status: 40 points
+  - Publisher reliability (tier1=25, tier2=15, tier3=8, unknown=0): 25 points
+  - Recency (within 5 years = 20, -2 per year): 20 points
+  - DOI presence: 15 points
+- Export: scoreReference(input: ScoringInput): number
+
+TASK 2.3: Implement Hybrid Search Service
+- File: lib/search/hybrid.search.ts
+- Combines vector search (cosine similarity via pgvector) + FTS (bilingual)
+- Supports filters: deviceId, chunkType, audienceLevel, language
+- Parameters: query, limit (default 20), minScore (default 0.3)
+- Flow:
+  1. Generate query embedding
+  2. Vector search on knowledge_chunks (cosine similarity)
+  3. FTS search (fts_arabic OR fts_english)
+  4. Merge, deduplicate, return full chunk data with reference+device
+
+TASK 2.4: Implement BullMQ Queue Definitions
+- File: lib/queue/index.ts
+- Queues: pdf-processing, embedding-generation, source-search
+- Job type interfaces: PdfJobData, EmbedJobData, SourceSearchJobData
+- Connection: IORedis with maxRetriesPerRequest: null
+
+TASK 2.5: Implement Queue Processors
+- lib/queue/processors/pdf.processor.ts
+  → Download PDF from MinIO → Extract text (pdf-parse/pdf.js) → OCR if needed
+    (Tesseract) → Chunk text → Classify chunks → Store KnowledgeChunks
+- lib/queue/processors/embedding.processor.ts
+  → Load text → Generate embedding → Store in pgvector column
+- lib/queue/processors/source-search.processor.ts
+  → Query external sources → Score results → Store in SourceRegistry
+
+TASK 2.6: Implement Worker Entry Point
+- File: lib/workers/index.ts
+- Registers all BullMQ workers for all three queues
+- Handles graceful shutdown
+
+TASK 2.7: Implement Centralized Error Handler
+- File: lib/utils/api-error-handler.ts
+- AppError class with statusCode, message, code
+- handleApiError function for consistent API error responses
+
+TASK 2.8: Implement External Service Retry Wrapper
+- File: lib/utils/retry.ts
+- withRetry<T>(fn, opts) with exponential backoff
+- Options: maxAttempts (default 3), delayMs (default 1000), timeoutMs (default 30000)
+
+TASK 2.9: Implement Chunk Splitter
+- File: lib/utils/chunk-splitter.ts
+- Split extracted text into logical knowledge segments
+- Link to page numbers and reference context
+- Strategy: paragraph-based with overlap for context preservation
+
+TASK 2.10: Implement Chunk Classifier
+- File: lib/utils/chunk-classifier.ts
+- Auto-detect chunk types: DEFINITION, OPERATING_PRINCIPLE, COMPONENTS,
+  MAINTENANCE, FAULTS, HAZARDS, CALIBRATION, SAFETY_WARNING, CLINICAL_USE,
+  CONTRAINDICATION, GENERAL
+
+# ── PHASE 3: FRONTEND — INTERFACES & ARABIC RTL ────────────
+
+TASK 3.1: Configure next.config.js for Arabic i18n
+```javascript
+const nextConfig = {
+  reactStrictMode: true,
+  i18n: {
+    locales: ['ar', 'en'],
+    defaultLocale: 'ar',
+    localeDetection: false,
+  },
+  images: { domains: ['localhost'] },
+};
+```
+
+TASK 3.2: Configure Tailwind for RTL + Medical Design System
+- Install: tailwindcss-rtl, @tailwindcss/typography, @tailwindcss/forms
+- Colors (medical green + slate palette):
+  primary: { DEFAULT: '#2E7D32', light: '#4CAF50', dark: '#1B5E20' }
+  secondary: { DEFAULT: '#546E7A', light: '#78909C', dark: '#37474F' }
+  success: '#388E3C', warning: '#F9A825', error: '#C62828', surface: '#F5F7FA'
+- Font: Cairo (Arabic) + Noto Sans Arabic
+
+TASK 3.3: Create pages/_document.tsx
+- Html lang="ar" dir="rtl"
+- Google Fonts: Cairo (300, 400, 600, 700)
+- Body class: font-arabic bg-surface text-slate-800 antialiased
+
+TASK 3.4: Implement Status Color Convention
+- File: lib/ui/status.ts
+- Standard colors across ALL interfaces:
+  ACCEPTED/APPROVED/PUBLISHED → green
+  UNDER_REVIEW/PENDING/SCHEDULED → yellow
+  REJECTED/FAILED → red
+  REQUIRES_REVISION → orange
+  DRAFT → slate
+
+TASK 3.5: Implement ALL Interface Pages
+Following the design guidelines:
+- Medical green + slate, light backgrounds, clear cards
+- Arabic fonts, sufficient white space
+- Open-source icons, search/filters/tabs/drawers/modals
+- Preview with copy/save/submit actions
+
+Pages to create/verify:
+
+pages/index.tsx                     → redirect to /admin/dashboard
+pages/auth/login.tsx
+pages/auth/register.tsx
+pages/auth/forgot-password.tsx
+pages/admin/dashboard.tsx           → dept/device indicators, cards, bars
+pages/admin/taxonomy/departments/index.tsx
+pages/admin/taxonomy/departments/[id].tsx
+pages/admin/taxonomy/devices/index.tsx
+pages/admin/taxonomy/devices/[id].tsx  → knowledge completeness tabs
+pages/admin/taxonomy/models/[id].tsx
+pages/admin/references/index.tsx    → reference management table
+pages/admin/references/upload.tsx   → PDF upload form
+pages/admin/references/[id].tsx     → reference detail + lifecycle
+pages/admin/verification/index.tsx  → review queue
+pages/admin/verification/[id].tsx   → reading area + accept/reject/notes
+pages/admin/knowledge/index.tsx     → dept listing → device search
+pages/admin/knowledge/[deviceId].tsx → tabs: Definition, Principle,
+Components, Technologies, Faults,
+Maintenance, References
+pages/admin/content/index.tsx       → daily tasks view
+pages/admin/content/create.tsx      → dept/device/tone selection + preview
+pages/admin/content/[id].tsx        → preview + publish
+pages/admin/ingestion/index.tsx     → ingestion monitor
+pages/admin/ingestion/[id].tsx
+pages/admin/settings/index.tsx      → general + technical + AI + scheduling
+
+# ── PHASE 4: AI INTEGRATION ────────────────────────────────
+
+TASK 4.1: Verify/Implement Embedding Service
+- File: lib/embeddings/embeddings.ts
+- Phase 1 path: OpenAI API (text-embedding-3-small, 1536-dim)
+- Phase 2 path: Self-hosted FastAPI bge-m3 (1024-dim) via EMBEDDING_SERVICE_URL
+- Fallback: deterministic zero vector with console.warn
+  (zero retrieval quality — for dev only)
+- The Phase 2 FastAPI service blueprint is at lib/embedding-service/main.py
+  (DO NOT activate in Phase 1)
+
+TASK 4.2: Document Phase 2 Embedding Migration Plan
+- bge-m3 outputs 1024-dim vs. current 1536-dim
+- Requires: pgvector column redefinition + full re-embedding of all chunks
+- Maintenance window with documented rollback script required
+- Add to docs/01-architecture/ as a planned migration document
+
+TASK 4.3: AI Boundaries Enforcement
+- AI is AUXILIARY — never replaces scientific reference or human review
+- No content generation from unapproved knowledge chunks
+- All generated content must preserve source tracing (sourceChunkIds)
+
+# ── PHASE 5: RESILIENCE, SECURITY & QUALITY ────────────────
+
+TASK 5.1: ESLint Configuration (.eslintrc.json)
+```json
+{
+  "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "prettier"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+    "no-console": ["warn", {"allow": ["warn", "error"]}],
+    "@typescript-eslint/no-floating-promises": "error",
+    "require-await": "error"
+  }
+}
+```
+
+TASK 5.2: Backup Strategy
+- Create docker-compose.backup.yml for PostgreSQL pg_dump
+- Create docs/03-operations/backup-restore-runbook.md
+- Include: restore procedure with pg_restore --clean --if-exists
+
+TASK 5.3: Secret Management
+- ALL secrets via .env (outside codebase)
+- .env MUST be in .gitignore
+- Database never directly exposed to the outside world
+- Console ports (MinIO 9001) bound to 127.0.0.1 only
+
+# ── PHASE 6: DEPLOYMENT PIPELINE ───────────────────────────
+
+TASK 6.1: Create GitHub Actions CI
+- File: .github/workflows/ci.yml
+- Triggers: push to main/develop, PR to main
+- Services: pgvector/pgvector:pg16, redis:7-alpine
+- Steps: checkout → setup node 20.9 → npm ci → prisma generate →
+         prisma migrate deploy → typecheck → lint → test → build
+- Environment variables for test DB
+
+TASK 6.2: Document Rollback Procedure
+- Docker image rollback via tag pinning
+- Database rollback via pre-deployment pg_dump snapshot
+- Document in docs/03-operations/
+
+# ── PHASE 7: DOCUMENTATION & GOVERNANCE ────────────────────
+
+TASK 7.1: Create ADR Template and Initial ADRs
+- Location: docs/adr/
+- Template: docs/adr/000-template.md (MADR format)
+- Create ADRs:
+  ADR-001: Modular Monolith over Microservices (Phase 1)
+  ADR-002: PostgreSQL + pgvector as primary data store
+  ADR-003: Pages Router retained (not App Router in Phase 1)
+  ADR-004: MinIO for file storage (S3-compatible, self-hosted)
+  ADR-005: OpenAI embeddings Phase 1; bge-m3 (1024-dim) Phase 2
+  ADR-006: Scientific verification as mandatory gate before content generation
+  ADR-007: BullMQ + Redis for all async processing
+
+TASK 7.2: Document Definition of Done for Knowledge Units
+A KnowledgeChunk is APPROVED when ALL of these are true:
+1. isApproved = true in knowledge_chunks table
+2. A linked ReviewTask exists with status = ACCEPTED
+3. reviewedAt is populated on the ReviewTask
+4. At least one VerificationLog with action = ACCEPTED and performedBy set
+5. An AuditLog with action = APPROVE exists for this chunk's reference
+6. embedding column is NOT NULL (chunk has been embedded)
+
+TASK 7.3: Developer Documentation Setup
+- Configure MkDocs or Docusaurus for internal developer docs
+- Include: architecture overview, service descriptions, API reference,
+  development setup guide
+
+TASK 7.4: Risk Register Documentation
+Document in docs/00-governance/:
+| Risk | Mitigation |
+| Over-reliance on AI without source governance | Scientific verification gate mandatory |
+| Weak reference quality | Quality scoring at ingest, min threshold configurable |
+| No version tracking | KnowledgeRevision table captures all edits |
+| Premature service expansion | Modular monolith; deferred items clearly marked |
+| Offline AI unrealism in Phase 1 | OpenAI Phase 1; self-hosted planned Phase 2 |
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 3: ARABIC FTS — VERIFICATION TEAM RULING
+# ─────────────────────────────────────────────────────────────
+
+Decision: Use pg_catalog.arabic AS-IS for Phase 1.
+- Two separate tsvector columns per language on KnowledgeChunk (text_ar → fts_arabic, text → fts_english)
+- Add `unaccent` only in Phase 2 IF diacritic noise is observed in retrieval testing
+- Bilingual query pattern: WHERE fts_arabic @@ ... OR fts_english @@ ...
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 4: EMBEDDING MODEL — VERIFICATION TEAM RULING
+# ─────────────────────────────────────────────────────────────
+
+Decision: Stay on OpenAI (1536-dim) for Phase 1. Switch to BAAI/bge-m3 (1024-dim) in Phase 2.
+- bge-m3: strong multilingual retrieval, 8k token context, Arabic+English cross-lingual
+- Alternative: intfloat/multilingual-e5-large-instruct
+- Arabic-heavy workloads: Swan-Large (optional)
+- Phase 2 migration requires: column resize + full re-embedding + maintenance window
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 5: MINIO — VERIFICATION TEAM RULING
+# ─────────────────────────────────────────────────────────────
+
+Decision: MinIO is APPROVED for Phase 1 storage.
+- Replaces local uploads/ folder
+- S3-compatible via @aws-sdk/client-s3
+- forcePathStyle: true is MANDATORY
+- Three buckets: references/, processed/, images/
+- Legacy scripts (scrape_fda.js, scrape_fda_hardened.js) may keep uploads/ writes
+until Phase 2 — they are offline CLI tools, not API-facing
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 6: TECHNOLOGY STACK — EXACT VERSIONS
+# ─────────────────────────────────────────────────────────────
+
+| Layer           | Technology              | Version    |
+|-----------------|-------------------------|------------|
+| Framework       | Next.js (Pages Router)  | 15.5.x LTS |
+| Runtime         | Node.js                 | ^20.9.0    |
+| Language        | TypeScript              | ^5.4.0     |
+| ORM             | Prisma                  | ^5.x       |
+| Database        | PostgreSQL              | ^16.x      |
+| Vector Search   | pgvector                | ^0.7.x     |
+| Queue           | BullMQ                  | ^5.x       |
+| Cache/Broker    | Redis                   | ^7.x       |
+| Auth            | NextAuth.js             | ^4.x       |
+| Styling         | Tailwind CSS            | ^3.x       |
+| Testing         | Jest + Testing Library  | ^29.x      |
+| Linting         | ESLint                  | ^8.x       |
+| Formatting      | Prettier                | ^3.x       |
+| Git Hooks       | Husky + lint-staged     | ^9.x/^15.x |
+
+# ─────────────────────────────────────────────────────────────
+# SECTION 99: MANDATORY REPORT FORMAT
+# ─────────────────────────────────────────────────────────────
+
+After completing ALL tasks, produce a SINGLE report with these exact sections:
+
+REPORT SECTION A: Platform Nature
+- Evidence-based description of the platform
+
+REPORT SECTION B: Database Structure
+- Every table, column, relation, index — with evidence from schema files
+
+REPORT SECTION C: Services Status
+- For each service: Fully Functional / Partial / Missing + file evidence
+
+REPORT SECTION D: Interfaces Status
+- For each interface: Complete / In Progress / Missing + file evidence + design status
+
+REPORT SECTION E: Actions Taken
+- Every file created, modified, or deleted — with before/after description
+
+REPORT SECTION F: Tasks Requested by Verification Team
+- Complete list of every task from Phases 0-7
+
+REPORT SECTION G: Tasks Completed
+- Each task with evidence (file path, command output)
+
+REPORT SECTION H: Tasks Not Started or Incomplete
+- Each task with reason and dependency
+
+REPORT SECTION I: Command Outputs
+- Full output of: typecheck, lint, migrate deploy, generate, ops:preflight,
+  ops:live-proof, build
+
+REPORT SECTION J: Questions for Verification Team
+- Numbered list of specific questions for guidance on remaining/incomplete tasks
+- Include any ambiguities discovered during execution
+
+# ══════════════════════════════════════════════════════════════
+# END OF DIRECTIVE
+# ══════════════════════════════════════════════════════════════

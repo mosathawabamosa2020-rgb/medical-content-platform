@@ -1,0 +1,232 @@
+recovery_plan:
+  id: med-knowledge-platform-recovery-2026-03-07
+  status: approved-for-execution
+  source_documents:
+    - TEAM_IMPLEMENTATION_GUIDE.md
+    - development-backlog.yaml
+    - IMPLEMENTATION_GAP_ANALYSIS_2026-03-07.md
+    - REMEDIATION_EXECUTION_PLAN.md
+
+  execution_mode: controlled-remediation
+
+  priorities:
+    P0:
+      description: must be completed immediately before feature expansion
+      items:
+        - REC-001
+        - REC-002
+        - REC-003
+    P1:
+      description: mandatory backlog closure layer after P0 stabilization
+      items:
+        - REC-004
+        - REC-005
+        - REC-006
+    P2:
+      description: hardening and release-preparedness completion layer
+      items:
+        - REC-007
+        - REC-008
+        - REC-009
+
+  recovery_items:
+    - id: REC-001
+      priority: P0
+      title: Restore deterministic quality gates
+      maps_to_tasks:
+        - TASK-003
+        - TASK-034
+        - TASK-035
+      objectives:
+        - exclude generated build artifacts from lint scope
+        - resolve build lock contention
+        - ensure lint test and build pass consistently
+      acceptance_criteria:
+        - npm run lint passes
+        - npm test passes
+        - npm run build passes
+        - generated artifacts are not linted as source code
+      deliverables:
+        - updated lint scope
+        - stable build workflow
+        - verification evidence
+
+    - id: REC-002
+      priority: P0
+      title: Consolidate source of truth and archive drifted documents
+      maps_to_tasks:
+        - TASK-001
+        - TASK-040
+      objectives:
+        - define authoritative execution documents
+        - archive obsolete or conflicting planning docs
+        - add ADR baseline
+      acceptance_criteria:
+        - team can identify one planning baseline
+        - outdated docs are marked superseded or archived
+        - ADR path is defined
+      deliverables:
+        - documentation map
+        - archive policy
+        - ADR template or baseline
+
+    - id: REC-003
+      priority: P0
+      title: Fix frontend and backend contract mismatches
+      maps_to_tasks:
+        - TASK-008
+        - TASK-024
+        - TASK-025
+        - TASK-030
+        - TASK-031
+      objectives:
+        - normalize API response contracts
+        - update frontend consumers
+        - add contract-sensitive regression checks
+      acceptance_criteria:
+        - no critical UI/API mismatch remains
+        - active pages consume correct response shapes
+        - shared response typing exists where applicable
+      deliverables:
+        - normalized DTOs or response contracts
+        - updated UI integrations
+        - regression test coverage baseline
+
+    - id: REC-004
+      priority: P1
+      title: Complete taxonomy APIs and management UI
+      maps_to_tasks:
+        - TASK-007
+        - TASK-008
+        - TASK-009
+        - TASK-010
+      objectives:
+        - implement departments CRUD API
+        - complete devices CRUD lifecycle
+        - implement device models CRUD API
+        - build taxonomy management UI
+      acceptance_criteria:
+        - departments devices and models are manageable from UI
+        - relation validation works correctly
+        - backlog acceptance criteria are satisfied for all mapped tasks
+      deliverables:
+        - taxonomy APIs
+        - taxonomy admin screens
+        - automated tests for CRUD paths
+
+    - id: REC-005
+      priority: P1
+      title: Implement settings foundation and UI
+      maps_to_tasks:
+        - TASK-032
+        - TASK-033
+      objectives:
+        - add settings persistence model
+        - add settings endpoints
+        - add settings screens with placeholders for future fields
+      acceptance_criteria:
+        - settings can be saved and retrieved
+        - settings UI exists and is usable
+        - change behavior is documented
+      deliverables:
+        - settings schema/model
+        - settings API
+        - settings UI
+
+    - id: REC-006
+      priority: P1
+      title: Expand audit traceability and governance implementation
+      maps_to_tasks:
+        - TASK-022
+        - TASK-040
+      objectives:
+        - audit log key status mutations
+        - record review and content changes
+        - formalize architecture decisions and onboarding
+      acceptance_criteria:
+        - audit logging covers major workflow mutations
+        - change history is queryable
+        - ADR baseline exists in repository
+      deliverables:
+        - extended audit coverage
+        - ADR records
+        - updated onboarding or dev docs
+
+    - id: REC-007
+      priority: P2
+      title: Implement backup and restore operational baseline
+      maps_to_tasks:
+        - TASK-036
+      objectives:
+        - define backup process
+        - define restore procedure
+        - verify restore path
+      acceptance_criteria:
+        - backups can be generated
+        - restore runbook exists
+        - restore validation evidence exists
+      deliverables:
+        - scripts or procedures
+        - runbook
+        - validation notes
+
+    - id: REC-008
+      priority: P2
+      title: Expand monitoring and alerting baseline
+      maps_to_tasks:
+        - TASK-037
+        - TASK-034
+      objectives:
+        - move beyond health endpoints
+        - add structured operational visibility
+        - define alerting baseline
+      acceptance_criteria:
+        - service health is inspectable
+        - critical failure visibility is improved
+        - monitoring path is documented
+      deliverables:
+        - monitoring baseline
+        - alerting notes
+        - updated ops docs
+
+    - id: REC-009
+      priority: P2
+      title: Execute final backlog closure pass
+      maps_to_tasks:
+        - TASK-001
+        - TASK-040
+      objectives:
+        - re-run full task matrix
+        - validate acceptance criteria task by task
+        - publish closure report
+      acceptance_criteria:
+        - all task statuses are re-evaluated
+        - evidence is attached to status decisions
+        - final closure report is produced
+      deliverables:
+        - updated status matrix
+        - closure evidence
+        - final audit summary
+
+  execution_order:
+    - REC-001
+    - REC-002
+    - REC-003
+    - REC-004
+    - REC-005
+    - REC-006
+    - REC-007
+    - REC-008
+    - REC-009
+
+  definition_of_recovery_done:
+    - p0_items_closed
+    - lint_passes
+    - build_passes
+    - tests_pass
+    - critical_contracts_aligned
+    - taxonomy_tasks_completed
+    - settings_baseline_exists
+    - audit_baseline_expanded
+    - ops_baseline_documented
+    - backlog_matrix_rerun

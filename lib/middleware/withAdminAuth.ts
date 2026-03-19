@@ -1,0 +1,2 @@
+export { withAdminAuth } from '../adminAuth'
+

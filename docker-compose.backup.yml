@@ -1,0 +1,14 @@
+services:
+  postgres-backup:
+    image: postgres:16-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-platform_pass}
+    volumes:
+      - ./artifacts/backups:/backups
+    command: >
+      sh -c "pg_dump
+      -h ${POSTGRES_HOST:-host.docker.internal}
+      -p ${POSTGRES_PORT:-15432}
+      -U ${POSTGRES_USER:-platform_user}
+      -d ${POSTGRES_DB:-medical_platform}
+      -Fc -f /backups/medical_platform.dump"

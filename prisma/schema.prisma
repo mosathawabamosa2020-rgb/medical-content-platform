@@ -1,0 +1,411 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL") // This is the new, important line
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(editor)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  devices   Device[]
+  verificationLogs VerificationLog[]
+  generatedContents GeneratedContent[]
+}
+
+enum Role {
+  admin
+  reviewer
+  editor
+}
+
+model Device {
+  id                 String              @id @default(cuid())
+  name               String
+  model              String
+  description        String?
+  department         Department?         @relation(fields: [departmentId], references: [id])
+  departmentId       String?
+  manufacturer       Manufacturer?       @relation(fields: [manufacturerId], references: [id])
+  manufacturerId     String?
+  knowledgeScore     Float               @default(0)
+  knowledgeComplete  Boolean             @default(false)
+  isActive           Boolean             @default(true)
+  archivedAt         DateTime?
+  createdBy          User?               @relation(fields: [createdById], references: [id])
+  createdById        String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  references         Reference[] // This line is now active again
+  plannerSuggestions PlannerSuggestion[]
+  sections           Section[]
+  deviceModels       DeviceModel[]
+  publishingTasks    PublishingTask[]
+  clinicalUses       DeviceClinicalUse[]
+  failureModes       DeviceFailureMode[]
+  ontologyOutgoing   DeviceOntologyEdge[] @relation("OntologyFromDevice")
+  ontologyIncoming   DeviceOntologyEdge[] @relation("OntologyToDevice")
+
+  @@unique([name, model], name: "unique_name_model")
+  @@index([departmentId])
+  @@index([manufacturerId])
+  @@index([knowledgeComplete])
+  @@index([isActive])
+}
+
+model Reference {
+  id              String           @id @default(cuid())
+  device          Device           @relation(fields: [deviceId], references: [id])
+  deviceId        String
+  title           String
+  filePath        String? // path to uploaded file in storage
+  sourceUrl       String? // optional link to original web page
+  sourceName      String? // e.g., "PubMed"
+  sourceId        String? // e.g., PubMed ID
+  doi             String?
+  pmid            String?
+  arxivId         String?
+  sourceFingerprint String?
+  sourceReliabilityScore Float? @default(0.0)
+  parsedText      String? // extracted text content (searchable)
+  pageCount       Int?
+  status          ReferenceStatus @default(pending_ingestion)
+  contentHash     String?
+  uploadedAt      DateTime         @default(now())
+  version         Int              @default(1)
+  processingDate  DateTime?
+  fileId          String?
+  file            File?            @relation(fields: [fileId], references: [id])
+  knowledgeChunks KnowledgeChunk[]
+  sections        Section[]
+  ingestionLogs   IngestionLog[]
+  verificationLogs VerificationLog[]
+  auditLogs       AuditLog[]
+  generatedContentRefs GeneratedContentReference[]
+
+  @@index([status])
+  @@index([uploadedAt])
+  @@index([contentHash])
+  @@index([doi])
+  @@index([pmid])
+  @@index([arxivId])
+  @@index([sourceFingerprint])
+  @@unique([deviceId, contentHash], name: "reference_device_contenthash_unique")
+  @@unique([deviceId, pmid], name: "reference_device_pmid_unique")
+  @@unique([deviceId, doi], name: "reference_device_doi_unique")
+  @@unique([deviceId, arxivId], name: "reference_device_arxiv_unique")
+  @@unique([deviceId, sourceFingerprint], name: "reference_device_fingerprint_unique")
+}
+
+enum ReferenceStatus {
+  pending_ingestion
+  processing
+  processed
+  pending_review
+  verified
+  rejected
+  archived
+}
+
+model KnowledgeChunk {
+  id          String                 @id @default(cuid())
+  reference   Reference              @relation(fields: [referenceId], references: [id])
+  referenceId String
+  content     String                 @db.Text
+  category    String
+  pageNumber  Int
+  language    String                 @default("en")
+  embedding   Unsupported("vector")?
+  createdAt   DateTime               @default(now())
+}
+
+model VerificationLog {
+  id          String    @id @default(cuid())
+  reference   Reference @relation(fields: [referenceId], references: [id])
+  referenceId String
+  reviewer    User      @relation(fields: [reviewerId], references: [id])
+  reviewerId  String
+  decision    String
+  comment     String?
+  createdAt   DateTime  @default(now())
+
+  @@index([referenceId])
+  @@index([reviewerId])
+}
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  reference   Reference @relation(fields: [referenceId], references: [id])
+  referenceId String
+  actorId     String?
+  action      String
+  payload     String?
+  createdAt   DateTime  @default(now())
+
+  @@index([referenceId])
+  @@index([actorId])
+}
+
+model File {
+  id         String      @id @default(cuid())
+  filename   String
+  mimeType   String
+  path       String
+  sizeBytes  Int
+  uploadedAt DateTime    @default(now())
+  references Reference[]
+}
+
+model SourceRegistry {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  baseUrl         String
+  lastFetchedAt   DateTime?
+  active          Boolean  @default(true)
+  rateLimitPolicy String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Department {
+  id             String           @id @default(cuid())
+  name           String           @unique
+  description    String?
+  isActive       Boolean          @default(true)
+  archivedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  devices        Device[]
+  publishingTasks PublishingTask[]
+
+  @@index([isActive])
+}
+
+model Manufacturer {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  devices     Device[]
+  deviceModels DeviceModel[]
+}
+
+model DeviceModel {
+  id             String        @id @default(cuid())
+  device         Device        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId       String
+  manufacturer   Manufacturer? @relation(fields: [manufacturerId], references: [id], onDelete: SetNull)
+  manufacturerId String?
+  modelName      String
+  year           Int?
+  specifications String?       @db.Text
+  isActive       Boolean       @default(true)
+  archivedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([deviceId])
+  @@index([manufacturerId])
+  @@index([isActive])
+  @@unique([deviceId, modelName], name: "device_model_unique_per_device")
+}
+
+model ClinicalUse {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  description String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  devices     DeviceClinicalUse[]
+}
+
+model FailureMode {
+  id          String              @id @default(cuid())
+  name        String              @unique
+  description String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  devices     DeviceFailureMode[]
+}
+
+model DeviceClinicalUse {
+  id            String      @id @default(cuid())
+  device        Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId      String
+  clinicalUse   ClinicalUse @relation(fields: [clinicalUseId], references: [id], onDelete: Cascade)
+  clinicalUseId String
+  createdAt     DateTime    @default(now())
+
+  @@unique([deviceId, clinicalUseId])
+  @@index([clinicalUseId])
+}
+
+model DeviceFailureMode {
+  id            String      @id @default(cuid())
+  device        Device      @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId      String
+  failureMode   FailureMode @relation(fields: [failureModeId], references: [id], onDelete: Cascade)
+  failureModeId String
+  createdAt     DateTime    @default(now())
+
+  @@unique([deviceId, failureModeId])
+  @@index([failureModeId])
+}
+
+model DeviceOntologyEdge {
+  id            String   @id @default(cuid())
+  fromDevice    Device   @relation("OntologyFromDevice", fields: [fromDeviceId], references: [id], onDelete: Cascade)
+  fromDeviceId  String
+  toDevice      Device   @relation("OntologyToDevice", fields: [toDeviceId], references: [id], onDelete: Cascade)
+  toDeviceId    String
+  relationType  String
+  weight        Float    @default(1)
+  createdAt     DateTime @default(now())
+
+  @@index([fromDeviceId])
+  @@index([toDeviceId])
+  @@unique([fromDeviceId, toDeviceId, relationType], name: "device_ontology_unique_edge")
+}
+
+model PlannerSuggestion {
+  id          String   @id @default(cuid())
+  device      Device   @relation(fields: [deviceId], references: [id])
+  deviceId    String
+  topic       String
+  referenceId String?
+  page        Int?
+  snippet     String?
+  score       Float?
+  createdAt   DateTime @default(now())
+}
+
+
+model Section {
+  id          String        @id @default(cuid())
+  device      Device        @relation(fields: [deviceId], references: [id])
+  deviceId    String
+  reference   Reference     @relation(fields: [referenceId], references: [id])
+  referenceId String
+  title       String
+  content     String        @db.Text
+  order       Int
+  embedding   Unsupported("vector")?
+  createdAt   DateTime      @default(now())
+}
+
+
+model IngestionLog {
+  id          String   @id @default(cuid())
+  reference   Reference? @relation(fields: [referenceId], references: [id])
+  referenceId String?
+  message     String
+  createdAt   DateTime @default(now())
+}
+
+model GeneratedContent {
+  id                     String                      @id @default(cuid())
+  user                   User?                       @relation(fields: [userId], references: [id])
+  userId                 String?
+  contentType            String                      @default("generic")
+  topic                  String
+  tone                   String
+  platform               String
+  script                 String                      @db.Text
+  caption                String                      @db.Text
+  hashtags               String[]
+  voiceoverText          String                      @db.Text
+  imageSourceUrl         String?
+  imagePrompt            String?                     @db.Text
+  generationCostEstimate Float                       @default(0)
+  tokenUsageInput        Int                         @default(0)
+  tokenUsageOutput       Int                         @default(0)
+  generationLatencyMs    Int                         @default(0)
+  retrievalLatencyMs     Int                         @default(0)
+  topKUsed               Int                         @default(0)
+  probeUsed              Int                         @default(0)
+  failureCode            String?
+  retryCount             Int                         @default(0)
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+  references             GeneratedContentReference[]
+  drafts                 ContentDraft[]
+  reelScripts            ReelScript[]
+  publishingTasks        PublishingTask[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([contentType])
+}
+
+model PublishingTask {
+  id                 String              @id @default(cuid())
+  device             Device              @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId           String
+  department         Department?         @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  departmentId       String?
+  taskType           String
+  status             PublishingTaskStatus @default(pending)
+  scheduledDate      DateTime
+  generatedContent   GeneratedContent?   @relation(fields: [generatedContentId], references: [id], onDelete: SetNull)
+  generatedContentId String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([deviceId])
+  @@index([departmentId])
+  @@index([status, scheduledDate])
+}
+
+enum PublishingTaskStatus {
+  pending
+  running
+  completed
+  failed
+  canceled
+}
+
+model GeneratedContentReference {
+  id                 String           @id @default(cuid())
+  generatedContent   GeneratedContent @relation(fields: [generatedContentId], references: [id], onDelete: Cascade)
+  generatedContentId String
+  reference          Reference        @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+  referenceId        String
+
+  @@unique([generatedContentId, referenceId])
+  @@index([referenceId])
+}
+
+model ContentDraft {
+  id                 String           @id @default(cuid())
+  generatedContent   GeneratedContent @relation(fields: [generatedContentId], references: [id], onDelete: Cascade)
+  generatedContentId String
+  draftJson          String           @db.Text
+  version            Int              @default(1)
+  createdAt          DateTime         @default(now())
+
+  @@index([generatedContentId])
+}
+
+model ReelScript {
+  id                 String           @id @default(cuid())
+  generatedContent   GeneratedContent @relation(fields: [generatedContentId], references: [id], onDelete: Cascade)
+  generatedContentId String
+  durationSec        Int
+  scriptText         String           @db.Text
+  timestampBreakdown String?
+  createdAt          DateTime         @default(now())
+
+  @@index([generatedContentId])
+}

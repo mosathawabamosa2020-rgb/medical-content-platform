@@ -1,6 +1,6 @@
 ﻿# REPORTS_INDEX
 
-Date: 2026-03-16
+Date: 2026-03-12
 
 ## Current Canonical Reports
 - docs/00-governance/SOURCE_OF_TRUTH.md
@@ -22,7 +22,6 @@ Date: 2026-03-16
 - docs/02-validation/IMPLEMENTATION_EXECUTION_REPORT_GROUP_E.md
 - docs/02-validation/PLATFORM_DEEP_VERIFICATION_AND_ALERTING_REPORT.md
 - docs/02-validation/PLATFORM_LIVE_MULTI_SOURCE_PROOF_REPORT.md
-- docs/02-validation/IMPLEMENTATION_EXECUTION_REPORT_GROUP_I.md
 - docs/02-validation/EXTERNAL_VERIFICATION_TEAM_FULL_PLATFORM_AUDIT_AND_VERIFICATION_REPORT.md
 - docs/02-validation/EXTERNAL_VERIFICATION_TEAM_EXECUTION_REPORT_2026-03-12.md
 - docs/03-operations/backup-restore-runbook.md

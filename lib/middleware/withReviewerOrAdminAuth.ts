@@ -1,0 +1,2 @@
+export { withReviewerOrAdminAuth } from '../adminAuth'
+
