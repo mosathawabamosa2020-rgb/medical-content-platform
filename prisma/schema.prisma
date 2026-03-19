@@ -12,46 +12,49 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      Role     @default(editor)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  devices   Device[]
-  verificationLogs VerificationLog[]
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  password          String
+  role              UserRole           @default(editor)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  devices           Device[]
+  verificationLogs  VerificationLog[]
   generatedContents GeneratedContent[]
+  userRoles         UserRole_[]
 }
 
-enum Role {
+enum UserRole {
   admin
   reviewer
   editor
 }
 
 model Device {
-  id                 String              @id @default(cuid())
+  id                 String               @id @default(cuid())
   name               String
   model              String
   description        String?
-  department         Department?         @relation(fields: [departmentId], references: [id])
+  department         Department?          @relation(fields: [departmentId], references: [id])
   departmentId       String?
-  manufacturer       Manufacturer?       @relation(fields: [manufacturerId], references: [id])
+  manufacturer       Manufacturer?        @relation(fields: [manufacturerId], references: [id])
   manufacturerId     String?
-  knowledgeScore     Float               @default(0)
-  knowledgeComplete  Boolean             @default(false)
-  isActive           Boolean             @default(true)
+  knowledgeScore     Float                @default(0)
+  knowledgeComplete  Boolean              @default(false)
+  isActive           Boolean              @default(true)
   archivedAt         DateTime?
-  createdBy          User?               @relation(fields: [createdById], references: [id])
+  createdBy          User?                @relation(fields: [createdById], references: [id])
   createdById        String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
   references         Reference[] // This line is now active again
   plannerSuggestions PlannerSuggestion[]
   sections           Section[]
   deviceModels       DeviceModel[]
   publishingTasks    PublishingTask[]
+  deviceTags         DeviceTag[]
+  learningPaths      LearningPath[]
   clinicalUses       DeviceClinicalUse[]
   failureModes       DeviceFailureMode[]
   ontologyOutgoing   DeviceOntologyEdge[] @relation("OntologyFromDevice")
@@ -65,35 +68,44 @@ model Device {
 }
 
 model Reference {
-  id              String           @id @default(cuid())
-  device          Device           @relation(fields: [deviceId], references: [id])
-  deviceId        String
-  title           String
-  filePath        String? // path to uploaded file in storage
-  sourceUrl       String? // optional link to original web page
-  sourceName      String? // e.g., "PubMed"
-  sourceId        String? // e.g., PubMed ID
-  doi             String?
-  pmid            String?
-  arxivId         String?
-  sourceFingerprint String?
-  sourceReliabilityScore Float? @default(0.0)
-  parsedText      String? // extracted text content (searchable)
-  pageCount       Int?
-  status          ReferenceStatus @default(pending_ingestion)
-  contentHash     String?
-  uploadedAt      DateTime         @default(now())
-  version         Int              @default(1)
-  processingDate  DateTime?
-  fileId          String?
-  file            File?            @relation(fields: [fileId], references: [id])
-  knowledgeChunks KnowledgeChunk[]
-  sections        Section[]
-  ingestionLogs   IngestionLog[]
-  verificationLogs VerificationLog[]
-  auditLogs       AuditLog[]
-  generatedContentRefs GeneratedContentReference[]
+  id                     String                      @id @default(cuid())
+  device                 Device                      @relation(fields: [deviceId], references: [id])
+  deviceId               String
+  title                  String
+  filePath               String? // path to uploaded file in storage
+  sourceUrl              String? // optional link to original web page
+  sourceName             String? // e.g., "PubMed"
+  sourceId               String? // e.g., PubMed ID
+  doi                    String?
+  pmid                   String?
+  arxivId                String?
+  sourceFingerprint      String?
+  sourceReliabilityScore Float?                      @default(0.0)
+  embedding              Unsupported("vector")?
+  parsedText             String? // extracted text content (searchable)
+  pageCount              Int?
+  status                 ReferenceStatus             @default(pending_ingestion)
+  contentHash            String?
+  uploadedAt             DateTime                    @default(now())
+  version                Int                         @default(1)
+  processingDate         DateTime?
+  fileId                 String?
+  file                   File?                       @relation(fields: [fileId], references: [id])
+  referenceFiles         ReferenceFile[]
+  knowledgeChunks        KnowledgeChunk[]
+  sections               Section[]
+  ingestionLogs          IngestionLog[]
+  verificationLogs       VerificationLog[]
+  reviewTasks            ReviewTask[]
+  auditLogs              AuditLog[]
+  referenceTags          ReferenceTag[]
+  generatedContentRefs   GeneratedContentReference[]
 
+  @@unique([deviceId, contentHash], name: "reference_device_contenthash_unique")
+  @@unique([deviceId, pmid], name: "reference_device_pmid_unique")
+  @@unique([deviceId, doi], name: "reference_device_doi_unique")
+  @@unique([deviceId, arxivId], name: "reference_device_arxiv_unique")
+  @@unique([deviceId, sourceFingerprint], name: "reference_device_fingerprint_unique")
   @@index([status])
   @@index([uploadedAt])
   @@index([contentHash])
@@ -101,11 +113,6 @@ model Reference {
   @@index([pmid])
   @@index([arxivId])
   @@index([sourceFingerprint])
-  @@unique([deviceId, contentHash], name: "reference_device_contenthash_unique")
-  @@unique([deviceId, pmid], name: "reference_device_pmid_unique")
-  @@unique([deviceId, doi], name: "reference_device_doi_unique")
-  @@unique([deviceId, arxivId], name: "reference_device_arxiv_unique")
-  @@unique([deviceId, sourceFingerprint], name: "reference_device_fingerprint_unique")
 }
 
 enum ReferenceStatus {
@@ -119,15 +126,20 @@ enum ReferenceStatus {
 }
 
 model KnowledgeChunk {
-  id          String                 @id @default(cuid())
-  reference   Reference              @relation(fields: [referenceId], references: [id])
+  id          String                   @id @default(cuid())
+  reference   Reference                @relation(fields: [referenceId], references: [id])
   referenceId String
-  content     String                 @db.Text
+  content     String                   @db.Text
   category    String
   pageNumber  Int
-  language    String                 @default("en")
+  language    String                   @default("en")
   embedding   Unsupported("vector")?
-  createdAt   DateTime               @default(now())
+  fts_arabic  Unsupported("tsvector")?
+  fts_english Unsupported("tsvector")?
+  createdAt   DateTime                 @default(now())
+  revisions   KnowledgeRevision[]
+  chunkTags   ChunkTag[]
+  reviewTasks ReviewTask[]
 }
 
 model VerificationLog {
@@ -168,37 +180,37 @@ model File {
 }
 
 model SourceRegistry {
-  id              String   @id @default(cuid())
-  name            String   @unique
+  id              String    @id @default(cuid())
+  name            String    @unique
   baseUrl         String
   lastFetchedAt   DateTime?
-  active          Boolean  @default(true)
+  active          Boolean   @default(true)
   rateLimitPolicy String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Department {
-  id             String           @id @default(cuid())
-  name           String           @unique
-  description    String?
-  isActive       Boolean          @default(true)
-  archivedAt     DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  devices        Device[]
+  id              String           @id @default(cuid())
+  name            String           @unique
+  description     String?
+  isActive        Boolean          @default(true)
+  archivedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  devices         Device[]
   publishingTasks PublishingTask[]
 
   @@index([isActive])
 }
 
 model Manufacturer {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  description String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  devices     Device[]
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  devices      Device[]
   deviceModels DeviceModel[]
 }
 
@@ -216,18 +228,18 @@ model DeviceModel {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
+  @@unique([deviceId, modelName], name: "device_model_unique_per_device")
   @@index([deviceId])
   @@index([manufacturerId])
   @@index([isActive])
-  @@unique([deviceId, modelName], name: "device_model_unique_per_device")
 }
 
 model ClinicalUse {
-  id          String             @id @default(cuid())
-  name        String             @unique
+  id          String              @id @default(cuid())
+  name        String              @unique
   description String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   devices     DeviceClinicalUse[]
 }
 
@@ -265,18 +277,18 @@ model DeviceFailureMode {
 }
 
 model DeviceOntologyEdge {
-  id            String   @id @default(cuid())
-  fromDevice    Device   @relation("OntologyFromDevice", fields: [fromDeviceId], references: [id], onDelete: Cascade)
-  fromDeviceId  String
-  toDevice      Device   @relation("OntologyToDevice", fields: [toDeviceId], references: [id], onDelete: Cascade)
-  toDeviceId    String
-  relationType  String
-  weight        Float    @default(1)
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  fromDevice   Device   @relation("OntologyFromDevice", fields: [fromDeviceId], references: [id], onDelete: Cascade)
+  fromDeviceId String
+  toDevice     Device   @relation("OntologyToDevice", fields: [toDeviceId], references: [id], onDelete: Cascade)
+  toDeviceId   String
+  relationType String
+  weight       Float    @default(1)
+  createdAt    DateTime @default(now())
 
+  @@unique([fromDeviceId, toDeviceId, relationType], name: "device_ontology_unique_edge")
   @@index([fromDeviceId])
   @@index([toDeviceId])
-  @@unique([fromDeviceId, toDeviceId, relationType], name: "device_ontology_unique_edge")
 }
 
 model PlannerSuggestion {
@@ -291,27 +303,25 @@ model PlannerSuggestion {
   createdAt   DateTime @default(now())
 }
 
-
 model Section {
-  id          String        @id @default(cuid())
-  device      Device        @relation(fields: [deviceId], references: [id])
+  id          String                 @id @default(cuid())
+  device      Device                 @relation(fields: [deviceId], references: [id])
   deviceId    String
-  reference   Reference     @relation(fields: [referenceId], references: [id])
+  reference   Reference              @relation(fields: [referenceId], references: [id])
   referenceId String
   title       String
-  content     String        @db.Text
+  content     String                 @db.Text
   order       Int
   embedding   Unsupported("vector")?
-  createdAt   DateTime      @default(now())
+  createdAt   DateTime               @default(now())
 }
 
-
 model IngestionLog {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   reference   Reference? @relation(fields: [referenceId], references: [id])
   referenceId String?
   message     String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
 }
 
 model GeneratedContent {
@@ -343,6 +353,8 @@ model GeneratedContent {
   drafts                 ContentDraft[]
   reelScripts            ReelScript[]
   publishingTasks        PublishingTask[]
+  ContentCategory        ContentCategory?            @relation(fields: [contentCategoryId], references: [id])
+  contentCategoryId      String?
 
   @@index([userId])
   @@index([createdAt])
@@ -350,18 +362,18 @@ model GeneratedContent {
 }
 
 model PublishingTask {
-  id                 String              @id @default(cuid())
-  device             Device              @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  id                 String               @id @default(cuid())
+  device             Device               @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   deviceId           String
-  department         Department?         @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  department         Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   departmentId       String?
   taskType           String
   status             PublishingTaskStatus @default(pending)
   scheduledDate      DateTime
-  generatedContent   GeneratedContent?   @relation(fields: [generatedContentId], references: [id], onDelete: SetNull)
+  generatedContent   GeneratedContent?    @relation(fields: [generatedContentId], references: [id], onDelete: SetNull)
   generatedContentId String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([deviceId])
   @@index([departmentId])
@@ -408,4 +420,214 @@ model ReelScript {
   createdAt          DateTime         @default(now())
 
   @@index([generatedContentId])
+}
+
+enum DeviceStatus {
+  active
+  inactive
+  archived
+}
+
+enum ReviewStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ContentStatus {
+  draft
+  pending_review
+  approved
+  published
+  rejected
+}
+
+enum ChunkType {
+  DEFINITION
+  OPERATING_PRINCIPLE
+  COMPONENTS
+  MAINTENANCE
+  FAULTS
+  HAZARDS
+  CALIBRATION
+  SAFETY_WARNING
+  CLINICAL_USE
+  CONTRAINDICATION
+  GENERAL
+}
+
+enum AudienceLevel {
+  GENERAL
+  PROFESSIONAL
+  EXPERT
+}
+
+enum Language {
+  ar
+  en
+}
+
+enum SourceType {
+  internal
+  external
+}
+
+model ReferenceFile {
+  id          String    @id @default(cuid())
+  reference   Reference @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+  referenceId String
+  filePath    String
+  mimeType    String?
+  sizeBytes   Int?
+  createdAt   DateTime  @default(now())
+
+  @@index([referenceId])
+}
+
+model KnowledgeRevision {
+  id               String         @id @default(cuid())
+  knowledgeChunk   KnowledgeChunk @relation(fields: [knowledgeChunkId], references: [id], onDelete: Cascade)
+  knowledgeChunkId String
+  content          String         @db.Text
+  version          Int            @default(1)
+  changedBy        String?
+  createdAt        DateTime       @default(now())
+
+  @@index([knowledgeChunkId])
+}
+
+model ReviewTask {
+  id               String          @id @default(cuid())
+  reference        Reference       @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+  referenceId      String
+  knowledgeChunk   KnowledgeChunk? @relation(fields: [knowledgeChunkId], references: [id], onDelete: SetNull)
+  knowledgeChunkId String?
+  status           ReviewStatus    @default(PENDING)
+  notes            String?
+  reviewedAt       DateTime?
+  reviewerId       String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([referenceId])
+  @@index([knowledgeChunkId])
+  @@index([status])
+}
+
+model ContentCategory {
+  id               String             @id @default(cuid())
+  name             String             @unique
+  description      String?
+  generatedContent GeneratedContent[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+}
+
+model Tag {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  deviceTags    DeviceTag[]
+  referenceTags ReferenceTag[]
+  chunkTags     ChunkTag[]
+  createdAt     DateTime       @default(now())
+}
+
+model DeviceTag {
+  id        String   @id @default(cuid())
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId  String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+  createdAt DateTime @default(now())
+
+  @@unique([deviceId, tagId])
+}
+
+model ReferenceTag {
+  id          String    @id @default(cuid())
+  reference   Reference @relation(fields: [referenceId], references: [id], onDelete: Cascade)
+  referenceId String
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId       String
+  createdAt   DateTime  @default(now())
+
+  @@unique([referenceId, tagId])
+}
+
+model ChunkTag {
+  id               String         @id @default(cuid())
+  knowledgeChunk   KnowledgeChunk @relation(fields: [knowledgeChunkId], references: [id], onDelete: Cascade)
+  knowledgeChunkId String
+  tag              Tag            @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId            String
+  createdAt        DateTime       @default(now())
+
+  @@unique([knowledgeChunkId, tagId])
+}
+
+model LearningPath {
+  id          String             @id @default(cuid())
+  device      Device             @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  deviceId    String
+  title       String
+  description String?
+  items       LearningPathItem[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([deviceId])
+}
+
+model LearningPathItem {
+  id             String       @id @default(cuid())
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  learningPathId String
+  title          String
+  description    String?
+  order          Int
+  referenceId    String?
+  createdAt      DateTime     @default(now())
+
+  @@unique([learningPathId, order])
+  @@index([learningPathId])
+}
+
+model Role {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  description     String?
+  rolePermissions RolePermission[]
+  userRoles       UserRole_[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Permission {
+  id              String           @id @default(cuid())
+  key             String           @unique
+  description     String?
+  rolePermissions RolePermission[]
+  createdAt       DateTime         @default(now())
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+}
+
+model UserRole_ {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId])
 }
