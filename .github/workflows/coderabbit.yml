@@ -16,4 +16,4 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run CodeRabbit Review
-        uses: coderabbitai/coderabbit-action@v2
+        uses: coderabbitai/coderabbit-action@v1
