@@ -1,4 +1,4 @@
-import prisma from '../../prisma'
+import prisma from '../../db/prisma'
 import { embedText } from '../../embeddings'
 
 export async function processEmbeddingJob(chunkId: string, text: string) {
@@ -9,4 +9,5 @@ export async function processEmbeddingJob(chunkId: string, text: string) {
     chunkId
   )
 }
+
 

@@ -1,4 +1,4 @@
-import prisma from '../prisma'
+import prisma from '../db/prisma'
 
 export async function writeAudit(action: string, payload?: string, actorId?: string, referenceId?: string) {
   const data: any = { action, payload, actorId }
@@ -7,3 +7,4 @@ export async function writeAudit(action: string, payload?: string, actorId?: str
     data,
   })
 }
+

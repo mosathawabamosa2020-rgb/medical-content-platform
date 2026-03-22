@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAdminAuth } from '../../../lib/adminAuth'
+import { withAdminAuth } from '../../../lib/middleware/withAdminAuth'
 
 const { computeMetrics } = require('../../../lib/services/MetricsService')
 

@@ -8,11 +8,32 @@ const nextConfig = {
     defaultLocale: 'ar',
     localeDetection: false,
   },
-  images: { domains: ['localhost'] },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'minio',
+        port: '9000',
+        pathname: '/**',
+      },
+    ],
+  },
   distDir: '.next-build',
   outputFileTracingRoot: path.join(__dirname),
   turbopack: {
     root: path.join(__dirname),
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = [...(config.externals || []), 'scripts/master_scraper']
+    }
+    return config
   },
 }
 

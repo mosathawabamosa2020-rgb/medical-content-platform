@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
-import prisma from '../../../lib/prisma'
+import prisma from '../../../lib/db/prisma'
 import { embedText } from '../../../lib/embeddings'
 import { RETRIEVAL_POLICY, runRetrievalQuery } from '../../../lib/services/retrieval'
 import type { RetrievalQueryInput } from '../../../lib/contracts/api'

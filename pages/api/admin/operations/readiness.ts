@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
-import prisma from '../../../../lib/prisma'
-import { withAdminAuth } from '../../../../lib/adminAuth'
+import prisma from '../../../../lib/db/prisma'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
 
 function safeStat(relativePath: string) {
   const abs = path.join(process.cwd(), relativePath)

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
-import prisma from '../../../../../lib/prisma'
-import { withAdminAuth } from '../../../../../lib/adminAuth'
+import prisma from '../../../../../lib/db/prisma'
+import { withAdminAuth } from '../../../../../lib/middleware/withAdminAuth'
 import { writeAuditEvent } from '../../../../../lib/auditTrail'
 
 const createSchema = z.object({

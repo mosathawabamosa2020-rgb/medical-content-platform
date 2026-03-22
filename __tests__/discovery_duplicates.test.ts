@@ -20,7 +20,7 @@ jest.mock('../lib/apiSecurity', () => ({
   setSecurityHeaders: () => undefined,
 }))
 
-jest.mock('../lib/prisma', () => ({
+jest.mock('../lib/db/prisma', () => ({
   __esModule: true,
   default: {
     reference: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
@@ -30,6 +30,10 @@ jest.mock('../lib/prisma', () => ({
 
 jest.mock('../lib/sourceIdentifiers', () => ({
   deriveSourceIdentifiers: (...args: any[]) => deriveSourceIdentifiers(...args),
+}))
+
+jest.mock('next-auth/next', () => ({
+  getServerSession: jest.fn(async () => ({ user: { id: 'u1', role: 'admin' } })),
 }))
 
 describe('discovery ingest duplicates', () => {
@@ -47,7 +51,7 @@ describe('discovery ingest duplicates', () => {
 
   test('returns 409 on duplicate by identifiers', async () => {
     deriveSourceIdentifiers.mockReturnValue({ pmid: 'pmid1' })
-    const prisma = require('../lib/prisma').default
+    const prisma = require('../lib/db/prisma').default
     prisma.reference.findFirst.mockResolvedValue({ id: 'dup1' })
 
     const { req, res } = createMocks({
@@ -63,7 +67,7 @@ describe('discovery ingest duplicates', () => {
 
   test('returns 409 on duplicate by content hash', async () => {
     deriveSourceIdentifiers.mockReturnValue({})
-    const prisma = require('../lib/prisma').default
+    const prisma = require('../lib/db/prisma').default
     prisma.reference.findFirst.mockResolvedValue({ id: 'dup2' })
 
     const { req, res } = createMocks({

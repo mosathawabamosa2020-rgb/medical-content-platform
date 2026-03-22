@@ -4,7 +4,7 @@ const loadSettings = jest.fn()
 const saveSettings = jest.fn()
 const writeAuditEvent = jest.fn()
 
-jest.mock('../lib/adminAuth', () => ({
+jest.mock('../lib/middleware/withAdminAuth', () => ({
   withAdminAuth: (h: any) => h,
 }))
 

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { PrismaClient, ReferenceStatus } from '@prisma/client'
-import { withAdminAuth } from '../../../lib/adminAuth'
+import { withAdminAuth } from '../../../lib/middleware/withAdminAuth'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).end()
@@ -21,3 +21,4 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export default withAdminAuth(handler)
+

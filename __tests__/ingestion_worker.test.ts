@@ -1,4 +1,4 @@
-jest.mock('../lib/prisma', () => {
+jest.mock('../lib/db/prisma', () => {
   const m = {
     reference: { findMany: jest.fn(), update: jest.fn() },
     section: { create: jest.fn() },
@@ -7,10 +7,10 @@ jest.mock('../lib/prisma', () => {
   return m
 })
 
-jest.mock('../lib/sources/PubMedAdapter', () => jest.fn())
+jest.mock('../lib/sources/pubmed.adapter', () => jest.fn())
 
-const prisma = require('../lib/prisma')
-const PubMedAdapter = require('../lib/sources/PubMedAdapter')
+const prisma = require('../lib/db/prisma')
+const PubMedAdapter = require('../lib/sources/pubmed.adapter')
 const { runIngestionWorker } = require('../lib/workers/ingestionWorker')
 
 describe('runIngestionWorker', () => {

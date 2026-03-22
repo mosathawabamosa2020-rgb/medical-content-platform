@@ -1,4 +1,4 @@
-import prisma from '../prisma'
+import prisma from '../db/prisma'
 
 export async function scheduleDailyPublishingTasks(limit = 10) {
   const candidates = await prisma.device.findMany({
@@ -35,3 +35,4 @@ export async function scheduleDailyPublishingTasks(limit = 10) {
   }
   return { createdCount: created.length, createdTaskIds: created }
 }
+

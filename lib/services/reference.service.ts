@@ -1,4 +1,4 @@
-import prisma from '../prisma'
+import prisma from '../db/prisma'
 
 export async function listReferences(deviceId?: string) {
   return prisma.reference.findMany({
@@ -6,4 +6,5 @@ export async function listReferences(deviceId?: string) {
     orderBy: { uploadedAt: 'desc' },
   })
 }
+
 

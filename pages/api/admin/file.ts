@@ -2,8 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
 import formidable from 'formidable'
-import { withAdminAuth } from '../../../lib/adminAuth'
-import prisma from '../../../lib/prisma'
+import { withAdminAuth } from '../../../lib/middleware/withAdminAuth'
+import prisma from '../../../lib/db/prisma'
 import logger from '../../../lib/logger'
 import { getObjectStream, isMinioEnabled, resolveMinioBucket, storeBuffer } from '../../../lib/storage/storageAdapter'
 
@@ -98,3 +98,4 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export default withAdminAuth(handler)
+

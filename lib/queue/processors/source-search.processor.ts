@@ -1,4 +1,4 @@
-import prisma from '../../prisma'
+import prisma from '../../db/prisma'
 import { scoreReference } from '../../utils/quality-scorer'
 
 export async function processSourceSearchJob(deviceId: string, query: string, sourceName: string) {
@@ -27,4 +27,5 @@ export async function processSourceSearchJob(deviceId: string, query: string, so
 
   return { deviceId, query, qualityScore }
 }
+
 

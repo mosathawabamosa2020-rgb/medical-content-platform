@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAdminAuth } from '../../../lib/adminAuth'
-import prisma from '../../../lib/prisma'
+import { withAdminAuth } from '../../../lib/middleware/withAdminAuth'
+import prisma from '../../../lib/db/prisma'
 import logger from '../../../lib/logger'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -38,3 +38,4 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export default withAdminAuth(handler)
+

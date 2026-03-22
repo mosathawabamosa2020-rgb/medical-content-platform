@@ -1,5 +1,7 @@
 import fs from 'fs'
 import path from 'path'
+import { embedText } from '../lib/embeddings'
+import { extractSections } from '../lib/sectionExtractor'
 const pdf = require('pdf-parse')
 const { PrismaClient } = require('@prisma/client')
 import { resolveMinioBucket, storeBuffer } from '../lib/storage/storageAdapter'
@@ -8,13 +10,6 @@ import { resolveMinioBucket, storeBuffer } from '../lib/storage/storageAdapter'
 export async function runScraper(input: string) {
   const logger = console
   const prisma = new PrismaClient()
-  let embedHelpers: any
-  try {
-    embedHelpers = require(path.join(process.cwd(), 'lib', 'embeddings'))
-  } catch {
-    embedHelpers = require(path.join(process.cwd(), 'dist', 'lib', 'embeddings'))
-  }
-  const { embedText } = embedHelpers
 
   const BASE_HOST = 'https://www.accessdata.fda.gov'
   const BASE_URL = `${BASE_HOST}/scripts/cdrh/cfdocs/cfPMN/pmn.cfm`
@@ -137,16 +132,11 @@ export async function runScraper(input: string) {
 
       // Section detection & storage
       try {
-        let extractSections: any
-        try {
-          ;({ extractSections } = require(path.join(process.cwd(), 'lib', 'sectionExtractor')))
-        } catch {
-          ;({ extractSections } = require(path.join(process.cwd(), 'dist', 'lib', 'sectionExtractor')))
-        }
         const sections = extractSections(pages)
         // do not delete previous sections; versioning preserves history
         for (let si = 0; si < sections.length; si++) {
           const sec = sections[si]
+          if (!sec) continue
           await prisma.section.create({ data: { deviceId, referenceId, title: sec.title, content: sec.content, order: si } })
         }
       } catch (e) {

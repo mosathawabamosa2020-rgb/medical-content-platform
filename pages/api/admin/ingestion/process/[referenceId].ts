@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAdminAuth } from '../../../../../lib/adminAuth'
+import { withAdminAuth } from '../../../../../lib/middleware/withAdminAuth'
 import { processReferenceById } from '../../../../../lib/workers/ingestionWorker'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -1,4 +1,4 @@
-﻿import { createMocks } from 'node-mocks-http'
+import { createMocks } from 'node-mocks-http'
 
 const lookup = jest.fn()
 
@@ -13,12 +13,16 @@ jest.mock('../lib/apiSecurity', () => ({
   setSecurityHeaders: () => undefined,
 }))
 
-jest.mock('../lib/prisma', () => ({
+jest.mock('../lib/db/prisma', () => ({
   __esModule: true,
   default: {
     reference: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
     ingestionLog: { create: jest.fn() },
   },
+}))
+
+jest.mock('next-auth/next', () => ({
+  getServerSession: jest.fn(async () => ({ user: { id: 'u1', role: 'admin' } })),
 }))
 
 describe('discovery ingest SSRF hardening', () => {

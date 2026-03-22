@@ -1,5 +1,5 @@
 import logger from './logger'
-import prisma from './prisma'
+import prisma from './db/prisma'
 
 const DEFAULT_DIM = 1536
 

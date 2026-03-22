@@ -1,11 +1,11 @@
 import { createMocks } from 'node-mocks-http'
 
 jest.mock('@prisma/client', () => ({ PrismaClient: jest.fn() }))
-jest.mock('../lib/sources/PubMedAdapter', () => {
+jest.mock('../lib/sources/pubmed.adapter', () => {
   return jest.fn().mockImplementation(() => ({ search: jest.fn() }))
 })
 
-const PubMedAdapter = require('../lib/sources/PubMedAdapter')
+const PubMedAdapter = require('../lib/sources/pubmed.adapter')
 
 describe('search pubmed API', () => {
   beforeEach(() => jest.clearAllMocks())

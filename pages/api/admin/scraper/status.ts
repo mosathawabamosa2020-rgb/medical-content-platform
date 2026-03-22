@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fs from 'fs'
 import path from 'path'
-import { withAdminAuth } from '../../../../lib/adminAuth'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
 
 const PID_PATH = path.join(process.cwd(), 'data', 'scraper_pid.json')
 const LOG_PATH = path.join(process.cwd(), 'data', 'scraper.log')

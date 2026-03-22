@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../lib/prisma'
+import prisma from '../../../lib/db/prisma'
 import { Prisma } from '@prisma/client'
 
 // public endpoint to browse verified references with simple pagination

@@ -1,6 +1,6 @@
 import { createMocks } from 'node-mocks-http'
 
-jest.mock('../lib/prisma', () => ({}))
+jest.mock('../lib/db/prisma', () => ({}))
 jest.mock('../lib/embeddings', () => ({ embedText: jest.fn() }))
 jest.mock('../lib/services/retrieval', () => ({
   RETRIEVAL_POLICY: { MIN_QUERY_LENGTH: 2, MAX_TOP_K: 25 },

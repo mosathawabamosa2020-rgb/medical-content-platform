@@ -1,4 +1,4 @@
-import prisma from '../prisma'
+import prisma from '../db/prisma'
 import { embedText } from '../embeddings'
 
 export async function vectorSearch(query: string, limit = 20) {
@@ -16,4 +16,5 @@ export async function vectorSearch(query: string, limit = 20) {
     limit
   )
 }
+
 

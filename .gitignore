@@ -156,3 +156,12 @@ main.py
 example-com.png
 tmp_profile.js
 tmp_query_sections.js
+
+# Runtime output artifacts
+hnsw_eval_output.txt
+retrieval_explain.txt
+retrieval_*.json
+retrieval_*.txt
+scientific_device_samples.json
+e2e_lifecycle_proof.json
+structure.txt

@@ -1,5 +1,5 @@
-import prisma from '../prisma'
-import PubMedAdapter from '../sources/PubMedAdapter'
+import prisma from '../db/prisma'
+import PubMedAdapter from '../sources/pubmed.adapter'
 import { assertTransition } from '../referenceState'
 import logger from '../logger'
 import { embedText } from '../embeddings'
@@ -129,4 +129,5 @@ export async function processReferenceById(referenceId: string) {
     throw e
   }
 }
+
 

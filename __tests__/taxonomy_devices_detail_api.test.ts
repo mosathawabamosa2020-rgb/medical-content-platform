@@ -1,11 +1,11 @@
-﻿import { createMocks } from 'node-mocks-http'
+import { createMocks } from 'node-mocks-http'
 
 const findUnique = jest.fn()
 const update = jest.fn()
 const depFindUnique = jest.fn()
 const modelCount = jest.fn()
 
-jest.mock('../lib/adminAuth', () => ({
+jest.mock('../lib/middleware/withAdminAuth', () => ({
   withAdminAuth: (h: any) => h,
 }))
 
@@ -13,7 +13,7 @@ jest.mock('../lib/auditTrail', () => ({
   writeAuditEvent: jest.fn(),
 }))
 
-jest.mock('../lib/prisma', () => ({
+jest.mock('../lib/db/prisma', () => ({
   __esModule: true,
   default: {
     device: {

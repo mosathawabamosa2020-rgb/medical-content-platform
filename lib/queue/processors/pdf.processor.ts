@@ -1,5 +1,5 @@
 import pdf from 'pdf-parse'
-import prisma from '../../prisma'
+import prisma from '../../db/prisma'
 import { classifyChunk } from '../../utils/chunk-classifier'
 import { splitIntoChunks } from '../../utils/chunk-splitter'
 import { downloadFile } from '../../storage/storageAdapter'
@@ -20,4 +20,5 @@ export async function processPdfJob(referenceId: string, bucket: string, key: st
     })
   }
 }
+
 

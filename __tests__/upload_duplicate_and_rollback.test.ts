@@ -26,7 +26,7 @@ jest.mock('../lib/apiSecurity', () => ({
   setSecurityHeaders: () => undefined,
 }))
 
-jest.mock('../lib/prisma', () => ({
+jest.mock('../lib/db/prisma', () => ({
   __esModule: true,
   default: {
     reference: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() },
@@ -71,7 +71,7 @@ describe('upload duplicate and rollback behavior', () => {
   }
 
   test('returns 409 on duplicate by identifiers', async () => {
-    const prisma = require('../lib/prisma').default
+    const prisma = require('../lib/db/prisma').default
     deriveSourceIdentifiers.mockReturnValue({ pmid: 'pmid1' })
     prisma.reference.findFirst.mockResolvedValue({ id: 'dup1' })
 
@@ -88,7 +88,7 @@ describe('upload duplicate and rollback behavior', () => {
   })
 
   test('rolls back reference on file write failure', async () => {
-    const prisma = require('../lib/prisma').default
+    const prisma = require('../lib/db/prisma').default
     prisma.reference.findFirst.mockResolvedValue(null)
     prisma.reference.create.mockResolvedValue({ id: 'ref1' })
 

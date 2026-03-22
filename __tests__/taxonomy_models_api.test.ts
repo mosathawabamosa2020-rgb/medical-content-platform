@@ -4,11 +4,11 @@ const findMany = jest.fn()
 const create = jest.fn()
 const findUnique = jest.fn()
 
-jest.mock('../lib/adminAuth', () => ({
+jest.mock('../lib/middleware/withAdminAuth', () => ({
   withAdminAuth: (h: any) => h,
 }))
 
-jest.mock('../lib/prisma', () => ({
+jest.mock('../lib/db/prisma', () => ({
   __esModule: true,
   default: {
     device: {

@@ -3,7 +3,7 @@ import { createMocks } from 'node-mocks-http'
 const findMany = jest.fn()
 const count = jest.fn()
 
-jest.mock('../lib/prisma', () => ({
+jest.mock('../lib/db/prisma', () => ({
   __esModule: true,
   default: {
     device: {

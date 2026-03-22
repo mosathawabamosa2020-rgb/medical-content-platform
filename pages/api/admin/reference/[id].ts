@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAdminAuth } from '../../../../lib/adminAuth'
-import prisma from '../../../../lib/prisma'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
+import prisma from '../../../../lib/db/prisma'
 import type { ReferenceDetailResponse, VerificationDecisionPayload } from '../../../../lib/contracts/api'
 import { applyReferenceVerificationDecision } from '../../../../lib/services/verificationService'
 import logger from '../../../../lib/logger'

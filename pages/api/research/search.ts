@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import PubMedAdapter from '../../../lib/sources/PubMedAdapter'
+import PubMedAdapter from '../../../lib/sources/pubmed.adapter'
 
 // simple in-memory cache: key -> { ts, data }
 const cache = new Map<string, { ts: number; data: any }>()

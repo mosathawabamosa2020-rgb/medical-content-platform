@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAdminAuth } from '../../../../lib/adminAuth'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
 import { enqueueIngestionJob, ensureSchedulersStarted } from '../../../../lib/queue/queues'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,3 +10,4 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 export default withAdminAuth(handler)
+

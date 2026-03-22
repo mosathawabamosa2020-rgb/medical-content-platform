@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { z } from 'zod'
-import { withAdminAuth } from '../../../../lib/adminAuth'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
 import { loadSettings, saveSettings } from '../../../../lib/settingsStore'
 import { writeAuditEvent } from '../../../../lib/auditTrail'
 

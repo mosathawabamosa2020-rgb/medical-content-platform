@@ -81,9 +81,9 @@ jest.mock('@prisma/client', () => {
 
 jest.mock('next-auth/next', () => ({ getServerSession: jest.fn() }))
 
-jest.mock('../lib/sources/PubMedAdapter', () => jest.fn())
+jest.mock('../lib/sources/pubmed.adapter', () => jest.fn())
 
-const PubMedAdapter = require('../lib/sources/PubMedAdapter')
+const PubMedAdapter = require('../lib/sources/pubmed.adapter')
 const { runIngestionWorker } = require('../lib/workers/ingestionWorker')
 const { PrismaClient } = require('@prisma/client')
 

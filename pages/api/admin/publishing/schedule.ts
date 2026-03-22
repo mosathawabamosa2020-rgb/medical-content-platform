@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { withAdminAuth } from '../../../../lib/adminAuth'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
 import { scheduleDailyPublishingTasks } from '../../../../lib/services/publishingScheduler'
 import { writeAuditEvent } from '../../../../lib/auditTrail'
 

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../../lib/prisma'
+import prisma from '../../../../lib/db/prisma'
 import dns from 'node:dns/promises'
 import net from 'node:net'
 import { getServerSession } from 'next-auth/next'
@@ -7,7 +7,7 @@ import { enforceCsrfForMutation, enforceRateLimit, setSecurityHeaders } from '..
 import logger from '../../../../lib/logger'
 import { computeContentHash } from '../../../../lib/hash'
 import { deriveSourceIdentifiers } from '../../../../lib/sourceIdentifiers'
-import { authOptions } from '../../auth/[...nextauth]'
+import authOptions from '../../../../lib/auth'
 import { resolveMinioBucket, storeBuffer } from '../../../../lib/storage/storageAdapter'
 
 const BLOCKED_PROTOCOLS = new Set(['file:', 'ftp:', 'gopher:'])

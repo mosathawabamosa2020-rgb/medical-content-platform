@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
 import authOptions from '../../../lib/auth'
-import prisma from '../../../lib/prisma'
+import prisma from '../../../lib/db/prisma'
 import { enforceCsrfForMutation, enforceRateLimit, setSecurityHeaders } from '../../../lib/apiSecurity'
 import { runRetrievalQuery } from '../../../lib/services/retrieval'
 import { embedText } from '../../../lib/embeddings'

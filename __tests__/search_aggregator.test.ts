@@ -1,7 +1,7 @@
-import PubMedAdapter from '../lib/sources/PubMedAdapter'
+import PubMedAdapter from '../lib/sources/pubmed.adapter'
 import SearchAggregatorService from '../lib/search/SearchAggregatorService'
 
-jest.mock('../lib/sources/PubMedAdapter')
+jest.mock('../lib/sources/pubmed.adapter')
 
 describe('SearchAggregatorService', () => {
   beforeEach(() => {

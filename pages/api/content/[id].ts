@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth/next'
 import authOptions from '../../../lib/auth'
-import prisma from '../../../lib/prisma'
+import prisma from '../../../lib/db/prisma'
 import { enforceCsrfForMutation, setSecurityHeaders } from '../../../lib/apiSecurity'
 import { writeAuditEvent } from '../../../lib/auditTrail'
 

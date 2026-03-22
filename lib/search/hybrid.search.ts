@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client'
-import prisma from '../prisma'
+import prisma from '../db/prisma'
 import { embedText } from '../embeddings'
 
 export type HybridSearchInput = {
@@ -76,3 +76,4 @@ export async function hybridSearch(input: HybridSearchInput) {
     .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
     .slice(0, limit)
 }
+
