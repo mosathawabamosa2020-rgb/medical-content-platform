@@ -10,3 +10,11 @@ AI-powered medical content and research platform
 ## Project Setup
 
 Initial setup for CodeRabbit AI code review.
+<<<<<<< HEAD
+=======
+
+## Project Setup
+
+Initial setup for CodeRabbit AI code review.
+# MedicalBot
+>>>>>>> 2fd20e9 (Apply suggestion from @coderabbitai[bot])
