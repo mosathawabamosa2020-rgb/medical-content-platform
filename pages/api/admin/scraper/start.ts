@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path'
 import fs from 'fs'
-import { withAdminAuth } from '../../../../lib/adminAuth'
+import { withAdminAuth } from '../../../../lib/middleware/withAdminAuth'
 import logger from '../../../../lib/logger'
 import { runScraper } from '../../../../scripts/master_scraper'
 // import { getQueue } from '../../../../lib/queue'

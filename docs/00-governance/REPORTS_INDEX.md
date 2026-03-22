@@ -30,3 +30,4 @@ Date: 2026-03-12
 ## Historical / Superseded Material
 - Timestamped reports belong under docs/archive/historical/.
 - Obsolete and replaced reports belong under docs/archive/superseded/.
+- Root-level legacy reports have been consolidated into `docs/02-validation/root-reports/`.

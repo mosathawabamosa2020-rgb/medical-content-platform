@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY not configured' })
 
     const body = {
-      model: 'gpt-3.5-turbo',
+      model: process.env.OPENAI_GENERATION_MODEL || 'gpt-4o',
       messages: [
         { role: 'system', content: 'You are a helpful assistant that writes social media posts for technical audiences.' },
         { role: 'user', content: prompt }
