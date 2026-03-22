@@ -1,2 +1,8 @@
-export { default, config } from '../../references/upload'
+import handler from '../../references/upload'
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
+export default handler

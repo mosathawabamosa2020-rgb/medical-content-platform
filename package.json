@@ -24,9 +24,9 @@
     "ops:backup": "node tools/ops_backup.js",
     "ops:restore": "node tools/ops_restore.js",
     "ops:readiness": "node tools/ops_readiness_snapshot.js",
-    "ops:preflight": "node tools/ops_preflight.js",
+    "ops:preflight": "ts-node scripts/ops-preflight.ts",
     "ops:export-validation": "node tools/export_validation_outputs.js",
-    "ops:live-proof": "node tools/run_live_discovery_proof.js",
+    "ops:live-proof": "ts-node scripts/ops-live-proof.ts",
     "ops:retrieval-visibility-proof": "node tools/run_retrieval_visibility_proof.js",
     "ops:vector-proof": "node tools/run_vector_retrieval_proof.js"
   },

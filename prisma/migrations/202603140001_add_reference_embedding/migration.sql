@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "Reference" ADD COLUMN "embedding" vector(1536);
+ALTER TABLE "Reference" ADD COLUMN IF NOT EXISTS "embedding" vector(1536);
