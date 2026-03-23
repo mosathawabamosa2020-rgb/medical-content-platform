@@ -2,8 +2,8 @@ import { z } from 'zod'
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).optional(),
-  DATABASE_URL: z.string().url(),
-  NEXTAUTH_SECRET: z.string().min(8),
+  DATABASE_URL: z.string().url().optional(),
+  NEXTAUTH_SECRET: z.string().min(8).optional(),
   OPEN_SOURCE_MODE: z.enum(['true', 'false']).optional().default('true'),
   OPENAI_API_KEY: z.string().min(10).optional(),
   REDIS_URL: z.string().url().optional(),
