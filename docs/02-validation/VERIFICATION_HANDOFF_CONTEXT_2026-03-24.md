@@ -27,9 +27,11 @@ The full founder <-> verification conversation is committed and available at:
 - PR #1 status: merged (historical)
 - PR #2 status: open and active for new verification
 - CodeRabbit App check: active on PR #2
-- CI / validate: currently failing in latest observed run due test expectations around readiness/redis classification in CI environment.
+- CI / validate: currently failing in latest observed run due to test expectations around readiness/redis classification in CI environment.
 
 Latest observed failing tests in PR CI run:
+- CI run: https://github.com/mosathawabamosa2020-rgb/medical-content-platform/actions/runs/23460428280 (run id `23460428280`)
+- Failing commit SHA: `341b308b2e6cbdb4529bf9231a838a8d38c66273`
 - `__tests__/readiness_classification.test.ts`
 - `__tests__/ops_readiness.test.ts`
 

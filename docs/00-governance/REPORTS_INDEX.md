@@ -1,6 +1,6 @@
-﻿# REPORTS_INDEX
+# REPORTS_INDEX
 
-Date: 2026-03-23
+Date: 2026-03-24
 
 ## Current Canonical Reports
 - docs/00-governance/SOURCE_OF_TRUTH.md
