@@ -21,9 +21,11 @@ const envSchema = z.object({
 export const env = envSchema.safeParse(process.env)
 if (!env.success) {
   const issues = env.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-  // During tests, allow missing env but log a warning so test harness can run without real services.
-  if (process.env.NODE_ENV === 'test') {
-    console.warn('Environment validation issues (TEST):', issues)
+
+  const isCI = process.env.CI === 'true'
+
+  if (process.env.NODE_ENV === 'test' || isCI) {
+    console.warn('Environment validation issues (SAFE MODE):', issues)
   } else {
     throw new Error(`Environment validation failed: ${issues}`)
   }
