@@ -5,7 +5,7 @@ import formidable from 'formidable'
 import { withAdminAuth } from '../../../lib/middleware/withAdminAuth'
 import prisma from '../../../lib/db/prisma'
 import logger from '../../../lib/logger'
-import { getObjectStream, isMinioEnabled, resolveMinioBucket, storeBuffer } from '../../../lib/storage/storageAdapter'
+import { getObjectStream, isMinioEnabled, resolveMinioBucket, storeBuffer } from '../../../lib/storage/storage.adapter'
 
 export const config = {
   api: {

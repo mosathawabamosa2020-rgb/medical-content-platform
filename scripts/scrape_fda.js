@@ -1,4 +1,4 @@
-// TODO Phase-2: migrate to MinIO storageAdapter (lib/storage/storageAdapter.ts)
+// TODO Phase-2: migrate to MinIO storage.adapter (lib/storage/storage.adapter.ts)
 // TODO Phase-2: remove local uploads/ dependency for this script
 const fs = require('fs')
 const path = require('path')

@@ -8,7 +8,7 @@ import logger from '../../../../lib/logger'
 import { computeContentHash } from '../../../../lib/hash'
 import { deriveSourceIdentifiers } from '../../../../lib/sourceIdentifiers'
 import authOptions from '../../../../lib/auth'
-import { resolveMinioBucket, storeBuffer } from '../../../../lib/storage/storageAdapter'
+import { resolveMinioBucket, storeBuffer } from '../../../../lib/storage/storage.adapter'
 
 const BLOCKED_PROTOCOLS = new Set(['file:', 'ftp:', 'gopher:'])
 const BLOCKED_HOSTS = new Set([

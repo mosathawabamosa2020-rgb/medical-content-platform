@@ -1,4 +1,4 @@
-// TODO Phase-2: migrate to MinIO storageAdapter (lib/storage/storageAdapter.ts)
+// TODO Phase-2: migrate to MinIO storage.adapter (lib/storage/storage.adapter.ts)
 /**
  * Hardened FDA 510(k) scraper for Project Apollo
  * - robots.txt check

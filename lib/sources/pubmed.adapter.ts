@@ -1,5 +1,5 @@
-import fetch from 'node-fetch'
 import type { SearchResultItem, SourceAdapter } from './SourceAdapter'
+import { fetchWithSourcePolicy } from './source-runtime'
 
 const PUBMED_SEARCH_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
 const PUBMED_SUMMARY_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi'
@@ -7,13 +7,13 @@ const PUBMED_SUMMARY_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esumma
 export default class PubMedAdapter implements SourceAdapter {
   async search(query: string) {
     const params = new URLSearchParams({ db: 'pubmed', term: query, retmode: 'json', retmax: '20' })
-    const r = await fetch(`${PUBMED_SEARCH_URL}?${params.toString()}`)
+    const r = await fetchWithSourcePolicy('pubmed', `${PUBMED_SEARCH_URL}?${params.toString()}`)
     const j = await r.json()
     const ids = (j.esearchresult?.idlist || []) as string[]
     if (!ids.length) return []
 
     const sumParams = new URLSearchParams({ db: 'pubmed', id: ids.join(','), retmode: 'json' })
-    const s = await fetch(`${PUBMED_SUMMARY_URL}?${sumParams.toString()}`)
+    const s = await fetchWithSourcePolicy('pubmed', `${PUBMED_SUMMARY_URL}?${sumParams.toString()}`)
     const sj = await s.json()
 
     const results: SearchResultItem[] = ids.map((id: string) => {
@@ -33,7 +33,7 @@ export default class PubMedAdapter implements SourceAdapter {
 
   async fetchById(id: string) {
     const sumParams = new URLSearchParams({ db: 'pubmed', id, retmode: 'json' })
-    const s = await fetch(`${PUBMED_SUMMARY_URL}?${sumParams.toString()}`)
+    const s = await fetchWithSourcePolicy('pubmed', `${PUBMED_SUMMARY_URL}?${sumParams.toString()}`)
     const sj = await s.json()
     return sj.result?.[id]
   }

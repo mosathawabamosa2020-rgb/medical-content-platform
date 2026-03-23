@@ -1,5 +1,6 @@
 import logger from './logger'
 import prisma from './db/prisma'
+import { incrementEmbeddingFallbackActivated } from './observability/metrics'
 
 const DEFAULT_DIM = 1536
 
@@ -55,7 +56,11 @@ export async function embedText(text: string): Promise<number[]> {
     if (process.env.EMBEDDING_SERVICE_URL) return await embedWithPhase2Service(text)
     return await embedWithOpenAI(text)
   } catch (err) {
-    logger.error({ err }, 'EMBEDDING_FALLBACK: zero vector returned; retrieval quality will degrade')
+    incrementEmbeddingFallbackActivated()
+    logger.error(
+      { err, code: 'EMBED_FALLBACK_ACTIVATED' },
+      'EMBED_FALLBACK_ACTIVATED: zero vector returned; retrieval quality will degrade'
+    )
     return zeroVector()
   }
 }

@@ -4,7 +4,7 @@ import { embedText } from '../lib/embeddings'
 import { extractSections } from '../lib/sectionExtractor'
 const pdf = require('pdf-parse')
 const { PrismaClient } = require('@prisma/client')
-import { resolveMinioBucket, storeBuffer } from '../lib/storage/storageAdapter'
+import { resolveMinioBucket, storeBuffer } from '../lib/storage/storage.adapter'
 
 // Master scraper exported function — will be compiled to dist/scripts/master_scraper.js
 export async function runScraper(input: string) {

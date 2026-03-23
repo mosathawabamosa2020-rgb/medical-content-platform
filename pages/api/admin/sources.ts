@@ -2,11 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { withAdminAuth } from '../../../lib/middleware/withAdminAuth'
 import prisma from '../../../lib/db/prisma'
 import logger from '../../../lib/logger'
+import { getSourceRateLimitInfo } from '../../../lib/sources/source-runtime'
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     const items = await prisma.sourceRegistry.findMany({ orderBy: { createdAt: 'desc' } })
     return res.status(200).json({
+      rateLimitInfo: getSourceRateLimitInfo(),
       items: items.map((s) => ({
         ...s,
         createdAt: s.createdAt.toISOString(),

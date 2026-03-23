@@ -1,4 +1,5 @@
 import logger from '../../logger'
+import { recordRetrievalLatencyMs } from '../../observability/metrics'
 import { normalizeRequest } from './normalize'
 import { rankAndPackage } from './rank'
 import { retrieveVectorCandidates } from './retrieve'
@@ -32,6 +33,7 @@ export async function runRetrievalQuery(
   const results = ranked.slice(start, end)
   const serializationMs = Date.now() - serializeStart
   const totalMs = Date.now() - startedAt
+  recordRetrievalLatencyMs(totalMs)
 
   const out: RetrievalResponse = {
     results,

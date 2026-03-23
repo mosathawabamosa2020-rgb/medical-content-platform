@@ -2,6 +2,8 @@ export type RetryOptions = {
   maxAttempts?: number
   delayMs?: number
   timeoutMs?: number
+  maxDelayMs?: number
+  jitterRatio?: number
 }
 
 function sleep(ms: number) {
@@ -24,6 +26,8 @@ export async function withRetry<T>(fn: () => Promise<T>, opts?: RetryOptions): P
   const maxAttempts = opts?.maxAttempts ?? 3
   const delayMs = opts?.delayMs ?? 1000
   const timeoutMs = opts?.timeoutMs ?? 30000
+  const maxDelayMs = opts?.maxDelayMs ?? 10000
+  const jitterRatio = opts?.jitterRatio ?? 0.2
 
   let lastError: unknown = null
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -32,10 +36,10 @@ export async function withRetry<T>(fn: () => Promise<T>, opts?: RetryOptions): P
     } catch (err) {
       lastError = err
       if (attempt === maxAttempts) break
-      const backoff = delayMs * Math.pow(2, attempt - 1)
-      await sleep(backoff)
+      const rawBackoff = Math.min(delayMs * Math.pow(2, attempt - 1), maxDelayMs)
+      const jitter = rawBackoff * jitterRatio * Math.random()
+      await sleep(Math.round(rawBackoff + jitter))
     }
   }
   throw lastError
 }
-

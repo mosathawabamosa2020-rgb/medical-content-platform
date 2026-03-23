@@ -1,4 +1,81 @@
-# active-backlog
+version: 1
+updated: 2026-03-23
+phase: 2
+owner: platform
+items:
+  - id: P2-EMB-001
+    title: Deploy FastAPI embedding service (BAAI/bge-m3, 1024-dim)
+    desc: Containerize service, expose /health and /embed, and wire URL via environment.
+    deliverables:
+      - lib/embedding-service/main.py
+      - docker-compose.yml (embedding-service)
+      - .env.example (EMBEDDING_SERVICE_URL and EMBEDDING_DIMENSIONS)
+    done_when:
+      - POST /embed returns 1024-dim vectors.
+      - /health returns 200.
+      - Local p50 latency is below 300ms for 1KB text.
 
-Canonical source:
-- Document file/development-backlog.yaml
+  - id: P2-EMB-002
+    title: Migrate pgvector dimensions 1536 -> 1024 and re-embed chunks
+    desc: Add SQL migration, execute batched re-embedding, and rebuild ANN indexes.
+    deliverables:
+      - prisma/migrations/2026xxxx_resize_vector_1024/migration.sql
+      - tools/reembed_all.ts
+      - docs/02-validation/EMBEDDING_MIGRATION_RUNBOOK.md
+    done_when:
+      - Section/KnowledgeChunk/Reference vector columns are 1024-dim.
+      - HNSW/IVFFLAT indexes rebuilt and validated.
+      - Retrieval smoke tests pass on bilingual probes.
+
+  - id: P2-OBS-001
+    title: Monitoring stack (Prometheus + Grafana + Loki)
+    desc: Add scrape pipeline, dashboards, and baseline alert rules.
+    deliverables:
+      - monitoring/prometheus.yml
+      - monitoring/alerts/*.yml
+      - monitoring/grafana/dashboards/*.json
+      - docker-compose.yml services (prometheus, grafana, loki)
+    done_when:
+      - API latency, queue depth, embedding fallback, and error codes are visible.
+      - Alert rules load successfully.
+
+  - id: P2-RTL-001
+    title: Full RTL audit for all admin pages
+    desc: Verify layout direction, navigation, forms, tables, and status tokens per page.
+    deliverables:
+      - docs/02-validation/RTL_AUDIT_REPORT.md
+      - artifacts/rtl-audit/screenshots/*
+    done_when:
+      - No critical RTL defects remain.
+      - All pages have checklist pass/fail evidence.
+
+  - id: P2-E2E-001
+    title: End-to-end ingestion proof artifact
+    desc: Upload one real PDF and capture complete flow to generated content with citations.
+    deliverables:
+      - docs/02-validation/E2E_INGESTION_PROOF_2026-03-23.md
+      - artifacts/e2e-ingestion-proof/*
+    done_when:
+      - Reference -> chunks -> approvals -> retrieval -> generation is evidenced with IDs and timestamps.
+      - Arabic query retrieves English chunks.
+
+  - id: P2-SLO-001
+    title: Retrieval SLO baseline and gold-set checks
+    desc: Define SLOs and build repeatable benchmark script with threshold assertions.
+    deliverables:
+      - docs/03-operations/readiness-model.md (SLO section update)
+      - tools/benchmark_retrieval.js (SLO output mode)
+      - artifacts/slo-baseline/*.json
+    done_when:
+      - P95 retrieval <= 250ms on representative dataset.
+      - Hit-rate >= 0.8 on curated gold query set.
+
+  - id: P2-SEC-001
+    title: Route-level security hardening follow-up
+    desc: Expand rate-limits and dependency audit with weekly CI checks.
+    deliverables:
+      - docs/02-validation/SECURITY_HARDENING_REPORT_PHASE2.md
+      - .github/workflows/security-audit.yml
+    done_when:
+      - Public mutating routes have explicit rate-limits and CSRF protections.
+      - npm audit high/critical findings are triaged or resolved.

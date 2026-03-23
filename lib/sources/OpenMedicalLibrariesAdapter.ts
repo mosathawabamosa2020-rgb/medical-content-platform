@@ -1,12 +1,12 @@
-import fetch from 'node-fetch'
 import type { SearchResultItem, SourceAdapter } from './SourceAdapter'
+import { fetchWithSourcePolicy } from './source-runtime'
 
 export default class OpenMedicalLibrariesAdapter implements SourceAdapter {
   async search(query: string): Promise<SearchResultItem[]> {
     const q = encodeURIComponent((query || '').trim())
     if (!q) return []
     const url = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${q}&format=json&pageSize=10`
-    const response = await fetch(url)
+    const response = await fetchWithSourcePolicy('open_medical_libraries', url)
     if (!response.ok) return []
     const data: any = await response.json()
     const list = Array.isArray(data?.resultList?.result) ? data.resultList.result : []

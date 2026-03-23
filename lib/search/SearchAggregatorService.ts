@@ -3,6 +3,7 @@ import FdaAdapter from '../sources/fda.adapter'
 import WikimediaAdapter from '../sources/wikimedia.adapter'
 import OpenMedicalLibrariesAdapter from '../sources/OpenMedicalLibrariesAdapter'
 import ManufacturerDocsAdapter from '../sources/ManufacturerDocsAdapter'
+import OpenAlexAdapter from '../sources/openalex.adapter'
 import type { SearchResultItem, SourceAdapter } from '../sources/SourceAdapter'
 
 export default class SearchAggregatorService {
@@ -18,6 +19,7 @@ export default class SearchAggregatorService {
       new FdaAdapter(),
       new WikimediaAdapter(),
       new OpenMedicalLibrariesAdapter(),
+      new OpenAlexAdapter(),
       new ManufacturerDocsAdapter(),
     ]
   }

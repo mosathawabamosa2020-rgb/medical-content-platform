@@ -43,7 +43,7 @@ jest.mock('next-auth/next', () => ({
 }))
 
 const storeBuffer = jest.fn()
-jest.mock('../lib/storage/storageAdapter', () => ({
+jest.mock('../lib/storage/storage.adapter', () => ({
   resolveMinioBucket: () => 'references',
   storeBuffer: (...args: any[]) => storeBuffer(...args),
 }))

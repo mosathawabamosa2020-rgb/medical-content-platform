@@ -9,7 +9,7 @@ import { enforceCsrfForMutation, enforceRateLimit, setSecurityHeaders } from '..
 import { computeContentHash } from '../../../lib/hash'
 import { deriveSourceIdentifiers } from '../../../lib/sourceIdentifiers'
 import authOptions from '../../../lib/auth'
-import { resolveMinioBucket, storeBuffer } from '../../../lib/storage/storageAdapter'
+import { resolveMinioBucket, storeBuffer } from '../../../lib/storage/storage.adapter'
 
 export const config = {
   api: {
