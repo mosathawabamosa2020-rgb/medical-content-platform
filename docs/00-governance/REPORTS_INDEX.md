@@ -27,6 +27,7 @@ Date: 2026-03-23
 - docs/02-validation/RTL_AUDIT_REPORT.md
 - docs/02-validation/E2E_INGESTION_PROOF_2026-03-23.md
 - docs/02-validation/IMPLEMENTATION_EXECUTION_REPORT_GROUP_IV_2026-03-23.md
+- docs/02-validation/PHASE_A_VERIFICATION_2026-03-23.md
 - docs/03-operations/backup-restore-runbook.md
 - docs/03-operations/readiness-model.md
 
