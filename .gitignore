@@ -153,6 +153,7 @@ MedicalBot/
 prisma/dev.db
 prisma/dev.db-journal
 main.py
+!lib/embedding-service/main.py
 example-com.png
 tmp_profile.js
 tmp_query_sections.js
