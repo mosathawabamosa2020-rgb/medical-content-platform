@@ -8,6 +8,7 @@ const BASE_URL = process.env.PROOF_BASE_URL || 'http://127.0.0.1:3000'
 const DEFAULT_AUTH_PATH = path.join(process.cwd(), 'playwright', 'auth.json')
 const DEFAULT_OUT_PATH = path.join(process.cwd(), 'artifacts', 'rtl-audit', 'chromium_route_verification_2026-03-24.json')
 const DEFAULT_SCREENSHOT_DIR = path.join(process.cwd(), 'artifacts', 'rtl-audit', 'screenshots')
+const DEFAULT_ROUTE_TIMEOUT_MS = Number(process.env.RTL_ROUTE_TIMEOUT_MS || 15000)
 
 const STATIC_ADMIN_ROUTES = [
   '/admin',
@@ -60,6 +61,7 @@ async function ensureAuthState(browser, baseUrl, authPath, email, password) {
   await page.fill('input[name="password"]', password)
   await page.click('button[type="submit"]')
   await page.waitForLoadState('networkidle', { timeout: 30000 })
+  await page.waitForURL((url) => !url.toString().includes('/api/auth/signin'), { timeout: 30000 })
 
   fs.mkdirSync(path.dirname(authPath), { recursive: true })
   await context.storageState({ path: authPath })
@@ -79,17 +81,28 @@ async function loadDynamicAdminRoutes() {
       prisma.generatedContent.findFirst({ select: { id: true }, orderBy: { createdAt: 'desc' } }),
     ])
 
+    const missing = []
+    if (!generatedContent?.id) missing.push('GeneratedContent')
+    if (!reference?.id) missing.push('Reference')
+    if (!device?.id) missing.push('Device')
+    if (!section?.id) missing.push('Section')
+    if (!department?.id) missing.push('Department')
+    if (!model?.id) missing.push('DeviceModel')
+    if (missing.length > 0) {
+      throw new Error(`Missing dynamic route entities for RTL audit: ${missing.join(', ')}.`)
+    }
+
     const dynamicRoutes = []
-    if (generatedContent?.id) dynamicRoutes.push(`/admin/content/${generatedContent.id}`)
-    if (reference?.id) dynamicRoutes.push(`/admin/ingestion/${reference.id}`)
-    if (device?.id) dynamicRoutes.push(`/admin/knowledge/${device.id}`)
-    if (reference?.id) dynamicRoutes.push(`/admin/references/${reference.id}`)
-    if (section?.id) dynamicRoutes.push(`/admin/sections/${section.id}`)
-    if (department?.id) dynamicRoutes.push(`/admin/taxonomy/departments/${department.id}`)
-    if (device?.id) dynamicRoutes.push(`/admin/taxonomy/devices/${device.id}`)
-    if (model?.id) dynamicRoutes.push(`/admin/taxonomy/models/${model.id}`)
-    if (reference?.id) dynamicRoutes.push(`/admin/verification/${reference.id}`)
-    if (reference?.id) dynamicRoutes.push(`/admin/verification/references/${reference.id}`)
+    dynamicRoutes.push(`/admin/content/${generatedContent.id}`)
+    dynamicRoutes.push(`/admin/ingestion/${reference.id}`)
+    dynamicRoutes.push(`/admin/knowledge/${device.id}`)
+    dynamicRoutes.push(`/admin/references/${reference.id}`)
+    dynamicRoutes.push(`/admin/sections/${section.id}`)
+    dynamicRoutes.push(`/admin/taxonomy/departments/${department.id}`)
+    dynamicRoutes.push(`/admin/taxonomy/devices/${device.id}`)
+    dynamicRoutes.push(`/admin/taxonomy/models/${model.id}`)
+    dynamicRoutes.push(`/admin/verification/${reference.id}`)
+    dynamicRoutes.push(`/admin/verification/references/${reference.id}`)
     return dynamicRoutes
   } finally {
     await prisma.$disconnect()
@@ -102,6 +115,7 @@ async function run() {
   const authPath = args.auth || DEFAULT_AUTH_PATH
   const outPath = args.out || DEFAULT_OUT_PATH
   const screenshotDir = args.screenshotDir || DEFAULT_SCREENSHOT_DIR
+  const routeTimeoutMs = Number(args.timeoutMs || process.env.RTL_ROUTE_TIMEOUT_MS || DEFAULT_ROUTE_TIMEOUT_MS)
   const email = args.email || process.env.ADMIN_EMAIL || 'admin@example.test'
   const password = args.password || process.env.ADMIN_PASSWORD || 'AdminPass123!'
   const dynamicRoutes = await loadDynamicAdminRoutes()
@@ -132,7 +146,7 @@ async function run() {
     let errorMessage = null
     const url = `${baseUrl}${route}`
     try {
-      const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 })
+      const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: routeTimeoutMs })
       status = response ? response.status() : null
       ok = Boolean(response && response.ok())
       finalUrl = page.url()
@@ -163,6 +177,7 @@ async function run() {
     generatedAt: new Date().toISOString(),
     baseUrl,
     authPath,
+    routeTimeoutMs,
     routes: adminRoutes,
     results,
     summary: {

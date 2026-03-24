@@ -15,5 +15,5 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!id) {
     return { redirect: { destination: '/admin/verification/references', permanent: false } }
   }
-  return { redirect: { destination: `/admin/verification/references/${id}`, permanent: false } }
+  return { redirect: { destination: `/admin/verification/references/${encodeURIComponent(id)}`, permanent: false } }
 }

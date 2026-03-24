@@ -1,5 +1,5 @@
 # E2E Ingestion Proof Report
-Date: 2026-03-24
+Date: 2026-03-23 (updated 2026-03-24)
 
 ## Objective
 Demonstrate end-to-end lifecycle evidence after A-2 enum remediation:
@@ -36,25 +36,21 @@ Demonstrate end-to-end lifecycle evidence after A-2 enum remediation:
 - Retrieval after approval: `4`
 
 ## Bilingual Retrieval Evidence
-- Arabic query token: `ŸÇÿ≥ÿ∑ÿ±ÿ©`
+- Arabic query token: `ﬁ”ÿ—…`
 - Post-approval bilingual hits: `3`
 - Sample returned English snippet:
-  - `English explanation: catheter insertion workflow aligned with ŸÇÿ≥ÿ∑ÿ±ÿ© terminology.`
+  - `English explanation: catheter insertion workflow aligned with ﬁ”ÿ—… terminology.`
 
 ## Generated Content Citation Evidence
 - Generated content ID: `cmn4w7yzg0009s3p634wiv2da`
 - Source reference IDs:
   - `cmn4w7x5g0004s3p6f5oblzw5`
-- Source section IDs:
-  - `sec-1774373583665-1`
-  - `sec-1774373583665-2`
-  - `sec-1774373583665-3`
-  - `sec-1774373583665-4`
-  - `sec-1774373583665-5`
+- Source chunk IDs:
+  - Captured in `generatedContentEvidence.sourceChunkIds` inside `artifacts/e2e_lifecycle_proof.json`
 
 ## Artifacts
 - Script: `tools/e2e_lifecycle_proof.js`
-- Output artifact: `artifacts/e2e_lifecycle_proof.json` (latest run payload should be exported from script output log)
+- Output artifact: `artifacts/e2e_lifecycle_proof.json`
 
 ## Status
-E2E lifecycle proof is now unblocked and executed successfully with live IDs, post-approval retrieval uplift, and bilingual evidence.
+E2E lifecycle proof is unblocked and executed successfully with live IDs, post-approval retrieval uplift, and bilingual evidence.

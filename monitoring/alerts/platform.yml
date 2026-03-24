@@ -10,14 +10,8 @@ groups:
           summary: "Queue depth exceeds 100 for 5+ minutes"
       - alert: EmbeddingFallbackActive
         expr: increase(embedding_fallback_activated_total[10m]) > 0
+        for: 5m
         labels:
           severity: warning
         annotations:
           summary: "Embedding fallback activated - vector retrieval quality degraded"
-      - alert: HighApiErrorRate
-        expr: api_error_rate > 0.05
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: "API error rate exceeded 5%"

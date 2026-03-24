@@ -20,56 +20,38 @@ require.extensions['.ts'] = function transpileTs(module, filename) {
 
 const { applyReferenceVerificationDecision } = require(path.join(process.cwd(), 'lib', 'services', 'verificationService.ts'))
 const { buildGeneratedContent } = require(path.join(process.cwd(), 'lib', 'services', 'contentGeneration.ts'))
+const { searchContent } = require(path.join(process.cwd(), 'lib', 'services', 'search.service.ts'))
 
 const prisma = new PrismaClient()
 
-function normalizeL2(vec) {
-  let s = 0
-  for (const v of vec) s += v * v
-  const n = Math.sqrt(s) || 1
-  return vec.map((v) => v / n)
-}
+async function searchCurrentRunVerifiedChunks({ query, deviceId, referenceId, currentChunkIds }) {
+  const hits = await searchContent(query, deviceId)
+  if (!hits.length) return []
 
-function localEmbedding(text, dim = 1536) {
-  const out = new Array(dim).fill(0)
-  let seed = 2166136261
-  const input = (text || '').toLowerCase()
-  for (let i = 0; i < input.length; i += 1) {
-    seed ^= input.charCodeAt(i)
-    seed = Math.imul(seed, 16777619)
-    out[Math.abs(seed) % dim] += ((seed >>> 0) % 2000) / 1000 - 1
-  }
-  return normalizeL2(out)
-}
+  const referenceIds = [...new Set(hits.map((hit) => hit.referenceId).filter(Boolean))]
+  const references = await prisma.reference.findMany({
+    where: { id: { in: referenceIds } },
+    select: { id: true, status: true },
+  })
+  const verifiedReferenceIds = new Set(
+    references
+      .filter((ref) => ref.status === 'verified')
+      .map((ref) => ref.id)
+  )
 
-async function searchByToken(token) {
-  const rows = await prisma.$queryRawUnsafe(`
-    SELECT s.id, s."referenceId", r.status, s.content
-    FROM "Section" s
-    JOIN "Reference" r ON r.id = s."referenceId"
-    WHERE s.content ILIKE '%${token}%'
-      AND r.status = 'verified'
-    LIMIT 10
-  `)
-  return rows
-}
-
-async function searchArabicToEnglish(arabicQueryToken) {
-  const rows = await prisma.$queryRawUnsafe(`
-    SELECT s.id, s.content, r.id AS "referenceId", r.status
-    FROM "Section" s
-    JOIN "Reference" r ON r.id = s."referenceId"
-    WHERE s.content ILIKE '%${arabicQueryToken}%'
-      AND r.status = 'verified'
-    LIMIT 10
-  `)
-  return rows
+  const currentChunkIdSet = new Set(currentChunkIds)
+  return hits.filter((hit) =>
+    hit.referenceId === referenceId &&
+    currentChunkIdSet.has(hit.id) &&
+    verifiedReferenceIds.has(hit.referenceId)
+  )
 }
 
 async function main() {
   const stamp = Date.now()
   const token = `e2e-proof-${stamp}`
-  const arabicToken = 'ŸÇÿ≥ÿ∑ÿ±ÿ©'
+  const arabicToken = 'ﬁ”ÿ—…'
+
   const reviewer = await prisma.user.upsert({
     where: { email: `reviewer+${stamp}@example.test` },
     update: {},
@@ -80,12 +62,15 @@ async function main() {
       name: 'E2E Reviewer',
     },
   })
+
   const device = await prisma.device.create({
     data: { name: `E2E Device ${stamp}`, model: `M-${stamp}`, description: 'Lifecycle proof device' },
   })
+
   const file = await prisma.file.create({
     data: { filename: `e2e-${stamp}.txt`, mimeType: 'text/plain', path: `/tmp/e2e-${stamp}.txt`, sizeBytes: 1200 },
   })
+
   const reference = await prisma.reference.create({
     data: {
       deviceId: device.id,
@@ -98,6 +83,7 @@ async function main() {
       contentHash: `sha256-${stamp}`,
     },
   })
+
   const sectionPayloads = [
     `This section includes ${token} for lifecycle validation.`,
     `Clinical safety checklist for ${token} and routine operation.`,
@@ -105,37 +91,78 @@ async function main() {
     `Maintenance protocol and calibration safeguards for ${token}.`,
     `Troubleshooting matrix with verification notes for ${token}.`,
   ]
+
   const sectionIds = []
+  const chunkIds = []
   for (let i = 0; i < sectionPayloads.length; i += 1) {
     const sectionId = `sec-${stamp}-${i + 1}`
-    const emb = localEmbedding(sectionPayloads[i])
-    await prisma.$executeRawUnsafe(`
-      INSERT INTO "Section" ("id","deviceId","referenceId","title","content","order","embedding","createdAt")
-      VALUES ('${sectionId}','${device.id}','${reference.id}','E2E Section ${i + 1}','${sectionPayloads[i].replace(/'/g, "''")}',${i + 1},'[${emb.join(',')}]'::vector,NOW())
-    `)
+    await prisma.section.create({
+      data: {
+        id: sectionId,
+        deviceId: device.id,
+        referenceId: reference.id,
+        title: `E2E Section ${i + 1}`,
+        content: sectionPayloads[i],
+        order: i + 1,
+      },
+    })
+
+    const createdChunk = await prisma.knowledgeChunk.create({
+      data: {
+        referenceId: reference.id,
+        content: sectionPayloads[i],
+        category: 'GENERAL',
+        pageNumber: i + 1,
+        language: 'en',
+      },
+      select: { id: true },
+    })
+
     sectionIds.push(sectionId)
+    chunkIds.push(createdChunk.id)
   }
 
-  const preSearch = await searchByToken(token)
+  const preSearch = await searchCurrentRunVerifiedChunks({
+    query: token,
+    deviceId: device.id,
+    referenceId: reference.id,
+    currentChunkIds: chunkIds,
+  })
 
   const decision = await applyReferenceVerificationDecision(prisma, reference.id, reviewer.id, {
     decision: 'approved',
     comment: 'E2E lifecycle approval',
   })
 
-  const verifiedRows = await prisma.$queryRawUnsafe(`
-    SELECT s.id AS "sectionId", s.content AS snippet, r.id AS "referenceId", r.title
-    FROM "Section" s
-    JOIN "Reference" r ON r.id = s."referenceId"
-    WHERE r.status = 'verified'
-      AND r.id = '${reference.id}'
-    ORDER BY s."order" ASC
-    LIMIT 8
-  `)
+  const verifiedRows = await prisma.knowledgeChunk.findMany({
+    where: {
+      referenceId: reference.id,
+      reference: { status: 'verified' },
+    },
+    orderBy: { pageNumber: 'asc' },
+    take: 8,
+    select: {
+      id: true,
+      content: true,
+      referenceId: true,
+      reference: { select: { title: true } },
+    },
+  })
+
   const generated = await buildGeneratedContent(
-    { topic: 'E2E lifecycle device post', tone: 'professional', platform: 'x', contentType: 'scientific_device', includeReel: true },
-    verifiedRows.map((x) => ({ snippet: x.snippet, reference: { id: x.referenceId, title: x.title || null } }))
+    {
+      topic: 'E2E lifecycle device post',
+      tone: 'professional',
+      platform: 'x',
+      contentType: 'scientific_device',
+      includeReel: true,
+    },
+    verifiedRows.map((row) => ({
+      snippet: row.content,
+      reference: { id: row.referenceId, title: row.reference?.title || null },
+    }))
   )
+
   const generatedContent = await prisma.generatedContent.create({
     data: {
       userId: reviewer.id,
@@ -162,13 +189,21 @@ async function main() {
     },
   })
 
-  const postSearch = await searchByToken(token)
-  const bilingualSearch = await searchArabicToEnglish(arabicToken)
-  const sectionsForReference = await prisma.$queryRawUnsafe(`
-    SELECT COUNT(*)::int AS count
-    FROM "Section"
-    WHERE "referenceId" = '${reference.id}'
-  `)
+  const postSearch = await searchCurrentRunVerifiedChunks({
+    query: token,
+    deviceId: device.id,
+    referenceId: reference.id,
+    currentChunkIds: chunkIds,
+  })
+
+  const bilingualSearch = await searchCurrentRunVerifiedChunks({
+    query: arabicToken,
+    deviceId: device.id,
+    referenceId: reference.id,
+    currentChunkIds: chunkIds,
+  })
+
+  const sectionsForReference = await prisma.section.count({ where: { referenceId: reference.id } })
 
   const payload = {
     generatedAt: new Date().toISOString(),
@@ -179,11 +214,16 @@ async function main() {
       referenceId: reference.id,
       generatedContentId: generatedContent.id,
       sectionIds,
+      chunkIds,
     },
-    sectionCountForReference: sectionsForReference?.[0]?.count ?? null,
+    sectionCountForReference: sectionsForReference,
     preApproveSearchResults: preSearch.length,
     approvalDecisionResult: decision,
     postApproveSearchResults: postSearch.length,
+    retrievalGuards: {
+      allPostApproveHitsBelongToCurrentRun: postSearch.every((row) => row.referenceId === reference.id && chunkIds.includes(row.id)),
+      allBilingualHitsBelongToCurrentRun: bilingualSearch.every((row) => row.referenceId === reference.id && chunkIds.includes(row.id)),
+    },
     bilingualProof: {
       query: arabicToken,
       postApproveHits: bilingualSearch.length,
@@ -192,10 +232,11 @@ async function main() {
     generatedContentEvidence: {
       generatedContentId: generatedContent.id,
       sourceReferenceIds: generated.references || [],
-      sourceSectionIds: verifiedRows.map((row) => row.sectionId),
+      sourceChunkIds: verifiedRows.map((row) => row.id),
     },
     postApproveReferenceStatus: (await prisma.reference.findUnique({ where: { id: reference.id } }))?.status || null,
   }
+
   const outPath = path.join(process.cwd(), 'artifacts', 'e2e_lifecycle_proof.json')
   fs.mkdirSync(path.dirname(outPath), { recursive: true })
   fs.writeFileSync(outPath, JSON.stringify(payload, null, 2), 'utf8')
