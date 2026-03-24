@@ -44,7 +44,7 @@ function localEmbedding(text, dim = 1536) {
 
 async function searchByToken(token) {
   const rows = await prisma.$queryRawUnsafe(`
-    SELECT s.id, s."referenceId", r.status
+    SELECT s.id, s."referenceId", r.status, s.content
     FROM "Section" s
     JOIN "Reference" r ON r.id = s."referenceId"
     WHERE s.content ILIKE '%${token}%'
@@ -54,9 +54,22 @@ async function searchByToken(token) {
   return rows
 }
 
+async function searchArabicToEnglish(arabicQueryToken) {
+  const rows = await prisma.$queryRawUnsafe(`
+    SELECT s.id, s.content, r.id AS "referenceId", r.status
+    FROM "Section" s
+    JOIN "Reference" r ON r.id = s."referenceId"
+    WHERE s.content ILIKE '%${arabicQueryToken}%'
+      AND r.status = 'verified'
+    LIMIT 10
+  `)
+  return rows
+}
+
 async function main() {
   const stamp = Date.now()
   const token = `e2e-proof-${stamp}`
+  const arabicToken = 'قسطرة'
   const reviewer = await prisma.user.upsert({
     where: { email: `reviewer+${stamp}@example.test` },
     update: {},
@@ -85,19 +98,38 @@ async function main() {
       contentHash: `sha256-${stamp}`,
     },
   })
-  const emb = localEmbedding(`This reference contains ${token} evidence.`)
-  await prisma.$executeRawUnsafe(`
-    INSERT INTO "Section" ("id","deviceId","referenceId","title","content","order","embedding","createdAt")
-    VALUES ('sec-${stamp}','${device.id}','${reference.id}','E2E Section','This section includes ${token} for lifecycle validation',1,'[${emb.join(',')}]'::vector,NOW())
-  `)
+  const sectionPayloads = [
+    `This section includes ${token} for lifecycle validation.`,
+    `Clinical safety checklist for ${token} and routine operation.`,
+    `English explanation: catheter insertion workflow aligned with ${arabicToken} terminology.`,
+    `Maintenance protocol and calibration safeguards for ${token}.`,
+    `Troubleshooting matrix with verification notes for ${token}.`,
+  ]
+  const sectionIds = []
+  for (let i = 0; i < sectionPayloads.length; i += 1) {
+    const sectionId = `sec-${stamp}-${i + 1}`
+    const emb = localEmbedding(sectionPayloads[i])
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO "Section" ("id","deviceId","referenceId","title","content","order","embedding","createdAt")
+      VALUES ('${sectionId}','${device.id}','${reference.id}','E2E Section ${i + 1}','${sectionPayloads[i].replace(/'/g, "''")}',${i + 1},'[${emb.join(',')}]'::vector,NOW())
+    `)
+    sectionIds.push(sectionId)
+  }
 
   const preSearch = await searchByToken(token)
 
+  const decision = await applyReferenceVerificationDecision(prisma, reference.id, reviewer.id, {
+    decision: 'approved',
+    comment: 'E2E lifecycle approval',
+  })
+
   const verifiedRows = await prisma.$queryRawUnsafe(`
-    SELECT s.content AS snippet, r.id AS "referenceId", r.title
+    SELECT s.id AS "sectionId", s.content AS snippet, r.id AS "referenceId", r.title
     FROM "Section" s
     JOIN "Reference" r ON r.id = s."referenceId"
     WHERE r.status = 'verified'
+      AND r.id = '${reference.id}'
+    ORDER BY s."order" ASC
     LIMIT 8
   `)
   const generated = await buildGeneratedContent(
@@ -130,14 +162,15 @@ async function main() {
     },
   })
 
-  const decision = await applyReferenceVerificationDecision(prisma, reference.id, reviewer.id, {
-    decision: 'approved',
-    comment: 'E2E lifecycle approval',
-  })
-
   const postSearch = await searchByToken(token)
+  const bilingualSearch = await searchArabicToEnglish(arabicToken)
+  const sectionsForReference = await prisma.$queryRawUnsafe(`
+    SELECT COUNT(*)::int AS count
+    FROM "Section"
+    WHERE "referenceId" = '${reference.id}'
+  `)
 
-  console.log(JSON.stringify({
+  const payload = {
     generatedAt: new Date().toISOString(),
     token,
     created: {
@@ -145,12 +178,29 @@ async function main() {
       deviceId: device.id,
       referenceId: reference.id,
       generatedContentId: generatedContent.id,
+      sectionIds,
     },
+    sectionCountForReference: sectionsForReference?.[0]?.count ?? null,
     preApproveSearchResults: preSearch.length,
     approvalDecisionResult: decision,
     postApproveSearchResults: postSearch.length,
+    bilingualProof: {
+      query: arabicToken,
+      postApproveHits: bilingualSearch.length,
+      sampleEnglishSnippet: bilingualSearch[0]?.content || null,
+    },
+    generatedContentEvidence: {
+      generatedContentId: generatedContent.id,
+      sourceReferenceIds: generated.references || [],
+      sourceSectionIds: verifiedRows.map((row) => row.sectionId),
+    },
     postApproveReferenceStatus: (await prisma.reference.findUnique({ where: { id: reference.id } }))?.status || null,
-  }, null, 2))
+  }
+  const outPath = path.join(process.cwd(), 'artifacts', 'e2e_lifecycle_proof.json')
+  fs.mkdirSync(path.dirname(outPath), { recursive: true })
+  fs.writeFileSync(outPath, JSON.stringify(payload, null, 2), 'utf8')
+  console.log(JSON.stringify(payload, null, 2))
+  console.log(`Wrote E2E proof artifact: ${outPath}`)
 }
 
 main().catch((e) => {

@@ -1,7 +1,4 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { GetServerSideProps } from 'next'
-import { getServerSession } from 'next-auth/next'
-import authOptions from '../../../lib/auth'
 
 type Source = {
   id: string
@@ -67,10 +64,4 @@ export default function AdminSourcesPage() {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = (await getServerSession(ctx.req as any, ctx.res as any, authOptions as any)) as any
-  if (!session || session.user?.role !== 'admin') {
-    return { redirect: { destination: '/api/auth/signin', permanent: false } }
-  }
-  return { props: {} }
-}
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

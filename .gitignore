@@ -165,3 +165,4 @@ retrieval_*.txt
 scientific_device_samples.json
 e2e_lifecycle_proof.json
 structure.txt
+playwright/auth.json

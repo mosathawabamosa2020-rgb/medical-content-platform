@@ -30,6 +30,7 @@ Date: 2026-03-24
 - docs/02-validation/IMPLEMENTATION_EXECUTION_REPORT_GROUP_V_2026-03-24.md
 - docs/02-validation/PHASE_A_VERIFICATION_2026-03-23.md
 - docs/02-validation/VERIFICATION_HANDOFF_CONTEXT_2026-03-24.md
+- docs/02-validation/EMBEDDING_MIGRATION_RUNBOOK.md
 - docs/03-operations/backup-restore-runbook.md
 - docs/03-operations/readiness-model.md
 

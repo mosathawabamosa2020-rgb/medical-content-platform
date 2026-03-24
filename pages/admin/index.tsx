@@ -1,8 +1,5 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { GetServerSideProps } from 'next'
-import { getServerSession } from 'next-auth/next'
-import authOptions from '../../lib/auth'
 
 export default function AdminHome() {
   const [readiness, setReadiness] = useState<'ok' | 'degraded' | 'blocked' | 'loading'>('loading')
@@ -36,10 +33,4 @@ export default function AdminHome() {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = (await getServerSession(ctx.req as any, ctx.res as any, authOptions as any)) as any
-  if (!session || session.user?.role !== 'admin') {
-    return { redirect: { destination: '/api/auth/signin', permanent: false } }
-  }
-  return { props: {} }
-}
+export { requireAdminServerSideProps as getServerSideProps } from '../../lib/auth/requireAdminServerSideProps'

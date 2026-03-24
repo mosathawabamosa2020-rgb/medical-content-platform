@@ -66,12 +66,7 @@ BEGIN
   ) INTO has_legacy_role;
 
   IF has_legacy_role THEN
-    BEGIN
-      EXECUTE 'DROP TYPE "Role"';
-    EXCEPTION
-      WHEN dependent_objects_still_exist THEN
-        NULL;
-    END;
+    EXECUTE 'DROP TYPE "Role"';
   END IF;
 
   SELECT EXISTS (
@@ -82,11 +77,6 @@ BEGIN
   ) INTO has_userrole_old;
 
   IF has_userrole_old THEN
-    BEGIN
-      EXECUTE 'DROP TYPE "UserRole_old"';
-    EXCEPTION
-      WHEN dependent_objects_still_exist THEN
-        NULL;
-    END;
+    EXECUTE 'DROP TYPE "UserRole_old"';
   END IF;
 END $$;

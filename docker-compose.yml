@@ -105,7 +105,55 @@ services:
       minio-init:
         condition: service_completed_successfully
 
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts:/etc/prometheus/alerts:ro
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+
+  loki:
+    image: grafana/loki:2.9.5
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+
+  embedding-service:
+    image: python:3.11-slim
+    profiles:
+      - phase2
+    volumes:
+      - ./lib/embedding-service:/app
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.2.2 &&
+             pip install --no-cache-dir -r requirements.txt &&
+             uvicorn main:app --host 0.0.0.0 --port 8001"
+    environment:
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-m3}
+    ports:
+      - "8001:8001"
+
 volumes:
   postgres_data:
   redis_data:
   minio_data:
+  grafana_data:

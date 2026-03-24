@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import { getServerSession } from 'next-auth/next'
-import authOptions from '../../../lib/auth'
-import { GetServerSideProps } from 'next'
 
 export default function SectionReview() {
   const router = useRouter()
@@ -59,10 +56,4 @@ export default function SectionReview() {
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const session = await getServerSession(ctx.req as any, ctx.res as any, authOptions as any)
-  if (!session || (session as any).user?.role !== 'admin') {
-    return { redirect: { destination: '/api/auth/signin', permanent: false } }
-  }
-  return { props: {} }
-}
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

@@ -34,9 +34,9 @@ Latest passing CI run for this branch:
 - Verified commit SHA: `569bb6c7d867431a93d0bdce3e83c5eee2e68420`
 
 ## Pending / Next Actions
-1. Continue verification execution from A-2/B/C package on PR #2.
-2. Review and approve `202603240001_userrole_enum_drift_patch`.
-3. Review and confirm B-3 admin SSR guard normalization coverage.
+1. Verification team to review Group V implementation updates (A-2/B-3/B-1/C-1/C-2/C-3).
+2. Confirm final acceptance criteria for B-2 RTL closure (current run produced partial/timeouts).
+3. Confirm acceptance interpretation for B-1 chunk-equivalence evidence (`Section` count).
 
 ## Key Evidence Documents
 - `docs/02-validation/IMPLEMENTATION_EXECUTION_REPORT_GROUP_IV_2026-03-23.md`
