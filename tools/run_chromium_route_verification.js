@@ -4,7 +4,7 @@ const path = require('node:path')
 const { chromium } = require('playwright')
 const { PrismaClient } = require('@prisma/client')
 
-const BASE_URL = process.env.PROOF_BASE_URL || 'http://127.0.0.1:3000'
+const BASE_URL = process.env.BASE_URL || process.env.PROOF_BASE_URL || 'http://127.0.0.1:3000'
 const DEFAULT_AUTH_PATH = path.join(process.cwd(), 'playwright', 'auth.json')
 const DEFAULT_OUT_PATH = path.join(process.cwd(), 'artifacts', 'rtl-audit', 'chromium_route_verification_2026-03-24.json')
 const DEFAULT_SCREENSHOT_DIR = path.join(process.cwd(), 'artifacts', 'rtl-audit', 'screenshots')
@@ -115,7 +115,8 @@ async function run() {
   const authPath = args.auth || DEFAULT_AUTH_PATH
   const outPath = args.out || DEFAULT_OUT_PATH
   const screenshotDir = args.screenshotDir || DEFAULT_SCREENSHOT_DIR
-  const routeTimeoutMs = Number(args.timeoutMs || process.env.RTL_ROUTE_TIMEOUT_MS || DEFAULT_ROUTE_TIMEOUT_MS)
+  const routeTimeoutMs = Number(args.routeTimeoutMs || args.timeoutMs || process.env.RTL_ROUTE_TIMEOUT_MS || DEFAULT_ROUTE_TIMEOUT_MS)
+  const waitForNetworkIdleMs = Number(args.waitForNetworkIdle || process.env.RTL_WAIT_FOR_NETWORK_IDLE_MS || 0)
   const email = args.email || process.env.ADMIN_EMAIL || 'admin@example.test'
   const password = args.password || process.env.ADMIN_PASSWORD || 'AdminPass123!'
   const dynamicRoutes = await loadDynamicAdminRoutes()
@@ -147,6 +148,9 @@ async function run() {
     const url = `${baseUrl}${route}`
     try {
       const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: routeTimeoutMs })
+      if (waitForNetworkIdleMs > 0) {
+        await page.waitForLoadState('networkidle', { timeout: waitForNetworkIdleMs })
+      }
       status = response ? response.status() : null
       ok = Boolean(response && response.ok())
       finalUrl = page.url()
@@ -178,6 +182,7 @@ async function run() {
     baseUrl,
     authPath,
     routeTimeoutMs,
+    waitForNetworkIdleMs,
     routes: adminRoutes,
     results,
     summary: {

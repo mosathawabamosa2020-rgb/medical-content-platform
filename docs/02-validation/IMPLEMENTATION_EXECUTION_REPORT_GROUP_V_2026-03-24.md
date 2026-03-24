@@ -69,12 +69,32 @@ Scope: Execute verification-team directives for A-2, B-1, B-2, C-1, C-2, C-3 and
 - Updated `docs/adr/ADR-009-monitoring-stack.md` heading spacing and markdown formatting.
 - Fixed typo in this report: `flagging`.
 
+9. Follow-up execution package deltas (post re-review)
+- Updated CI gate:
+  - `.github/workflows/ci.yml` now runs `npx prisma migrate status --schema=prisma/schema.prisma` after migrate deploy.
+- Updated observability for dashboard/alerts alignment:
+  - Added `api_error_rate` metric export in `lib/observability/metrics.ts` and `pages/api/metrics.ts`.
+  - Added Grafana baseline dashboard:
+    - `monitoring/grafana/dashboards/medical-platform-overview.json`
+  - Updated `monitoring/alerts/platform.yml` to include `HighApiErrorRate` with valid backing metric and keep `EmbeddingFallbackActive` with `for: 5m`.
+- Updated env template for C-2:
+  - `.env.example` now includes:
+    - `EMBEDDING_SERVICE_URL=http://localhost:8001`
+    - `EMBEDDING_MODEL=BAAI/bge-m3`
+    - `EMBEDDING_DIMENSIONS=1024`
+- Updated RTL runner interface compatibility:
+  - `tools/run_chromium_route_verification.js` now accepts `--routeTimeoutMs`, `--waitForNetworkIdle`, and `BASE_URL` env.
+
 ## Validation Evidence
 
 - `npm run typecheck` -> PASS
 - `npm run lint` -> PASS
 - `npm test -- --runInBand` -> PASS (`46/46` suites, `116/116` tests)
 - `node tools/e2e_lifecycle_proof.js` -> PASS (artifact written)
+- Post-follow-up regression checks:
+  - `npm run typecheck` -> PASS
+  - `npm run lint` -> PASS
+  - `npm test -- --runInBand` -> PASS (`46/46` suites, `116/116` tests)
 
 ## Incomplete / Partially Complete
 
@@ -85,6 +105,14 @@ Scope: Execute verification-team directives for A-2, B-1, B-2, C-1, C-2, C-3 and
 2. C-2 runtime embedding service gate
 - Status: Partial
 - Reason: code and compose scaffolding are complete; final stage validation (`/health` and `/embed` evidence with model load) still needs an executed run artifact.
+
+3. Runtime smoke gates requiring Docker daemon (B-2/C-1/C-2)
+- Status: Blocked in this execution environment
+- Reason: local Docker service is currently unavailable (`com.docker.service` is stopped and cannot be started from this shell context), so Prometheus/Grafana/Loki and profile-gated embedding runtime checks cannot be executed in this pass.
+- Required to close:
+  - B-2 authenticated 28-route capture run (or accepted 2-run merge evidence)
+  - C-1 Prometheus/Grafana smoke curl evidence and target-up proof
+  - C-2 embedding `/health` and `/embed` (1024-dim) live proof
 
 ## Questions for Verification Team
 

@@ -37,6 +37,7 @@ Latest passing CI run for this branch:
 1. Verification team to review open Group V execution items: B-1 evidence hardening, B-2 authenticated RTL closure, C-1 monitoring validation, C-2 staging runbook validation, C-3 ADR wording.
 2. Confirm final acceptance criteria for B-2 RTL closure after complete 28-route run.
 3. Confirm Phase C gating sequence for embedding staging and monitoring screenshots.
+4. Runtime execution note: Docker daemon must be running locally to execute B-2/C-1/C-2 smoke proofs.
 
 ## Key Evidence Documents
 - `docs/02-validation/IMPLEMENTATION_EXECUTION_REPORT_GROUP_IV_2026-03-23.md`

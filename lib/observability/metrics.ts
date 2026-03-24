@@ -9,9 +9,14 @@ type RetrievalLatencySnapshot = {
   retrieval_latency_ms_p95: number
 }
 
+type ApiErrorRateSnapshot = {
+  api_error_rate: number
+}
+
 const MAX_SAMPLES = 500
 const RETRIEVAL_LATENCIES_MS: number[] = []
 let embeddingFallbackActivatedTotal = 0
+let apiErrorRate = 0
 
 function percentile(values: number[], p: number): number {
   if (!values.length) return 0
@@ -40,6 +45,15 @@ export function getRetrievalLatencySnapshot(): RetrievalLatencySnapshot {
 
 export function getEmbeddingFallbackActivatedTotal(): number {
   return embeddingFallbackActivatedTotal
+}
+
+export function setApiErrorRate(rate: number) {
+  if (!Number.isFinite(rate) || rate < 0) return
+  apiErrorRate = Number(rate.toFixed(4))
+}
+
+export function getApiErrorRate(): number {
+  return apiErrorRate
 }
 
 async function computeDepth(queueName: string): Promise<number> {
@@ -75,7 +89,7 @@ export async function getQueueDepthSnapshot(): Promise<QueueDepthSnapshot> {
   }
 }
 
-export function buildPrometheusMetricsText(input: QueueDepthSnapshot & RetrievalLatencySnapshot & {
+export function buildPrometheusMetricsText(input: QueueDepthSnapshot & RetrievalLatencySnapshot & ApiErrorRateSnapshot & {
   embedding_fallback_activated_total: number
 }) {
   return [
@@ -94,6 +108,9 @@ export function buildPrometheusMetricsText(input: QueueDepthSnapshot & Retrieval
     '# HELP retrieval_latency_ms_p95 Rolling retrieval latency P95 in milliseconds.',
     '# TYPE retrieval_latency_ms_p95 gauge',
     `retrieval_latency_ms_p95 ${input.retrieval_latency_ms_p95}`,
+    '# HELP api_error_rate Rolling API error rate (0.0 - 1.0).',
+    '# TYPE api_error_rate gauge',
+    `api_error_rate ${input.api_error_rate}`,
     '# HELP embedding_fallback_activated_total Count of embedding fallback activations.',
     '# TYPE embedding_fallback_activated_total counter',
     `embedding_fallback_activated_total ${input.embedding_fallback_activated_total}`,
@@ -103,4 +120,5 @@ export function buildPrometheusMetricsText(input: QueueDepthSnapshot & Retrieval
 export function __resetMetricsForTests() {
   RETRIEVAL_LATENCIES_MS.length = 0
   embeddingFallbackActivatedTotal = 0
+  apiErrorRate = 0
 }
