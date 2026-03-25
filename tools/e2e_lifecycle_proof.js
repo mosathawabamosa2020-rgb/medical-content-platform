@@ -1,8 +1,8 @@
-﻿require('dotenv').config({ path: '.env.local' })
+require('dotenv').config({ path: '.env.local' })
 const fs = require('fs')
 const path = require('path')
 const ts = require('typescript')
-const { PrismaClient, Prisma } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client')
 
 require.extensions['.ts'] = function transpileTs(module, filename) {
   const source = fs.readFileSync(filename, 'utf8')
@@ -138,10 +138,10 @@ async function main() {
     })
 
     const chunkEmbedding = localEmbedding(sectionPayloads[i])
-    const vecSql = Prisma.sql`[${Prisma.join(chunkEmbedding.map((v) => Number(v)))}]`
+    const vecLiteral = `[${chunkEmbedding.map((v) => Number(v)).join(',')}]`
     await prisma.$executeRaw`
       UPDATE "KnowledgeChunk"
-      SET "embedding" = ${vecSql}::vector
+      SET "embedding" = ${vecLiteral}::vector
       WHERE "id" = ${createdChunk.id}
     `
 
@@ -261,7 +261,7 @@ async function main() {
     generatedContentEvidence: {
       generatedContentId: generatedContent.id,
       sourceReferenceIds: generated.references || [],
-      sourceChunkIds: generated.sourceChunkIds || verifiedRows.map((row) => row.id),
+      sourceChunkIds: generated.sourceChunkIds,
     },
     postApproveReferenceStatus: (await prisma.reference.findUnique({ where: { id: reference.id } }))?.status || null,
   }

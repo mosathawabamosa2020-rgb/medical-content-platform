@@ -110,6 +110,23 @@ Scope: Execute verification-team directives for A-2, B-1, B-2, C-1, C-2, C-3 and
   - `docs/02-validation/EMBEDDING_MIGRATION_RUNBOOK.md` updated with concrete SQL/reindex steps and `.js` tool references.
   - `docs/adr/ADR-010-pages-router-retention.md` heading spacing adjusted for markdownlint.
 
+11. Follow-up verifier deltas (2026-03-25 second pass)
+- Added Grafana Prometheus datasource auto-provisioning:
+  - `monitoring/grafana/datasources/prometheus.yml`
+  - mounted in `docker-compose.yml` under grafana provisioning path.
+- Embedding service security and startup hardening:
+  - `lib/embedding-service/requirements.txt` updated to `fastapi==0.116.2`.
+  - `lib/embedding-service/Dockerfile` healthcheck start period increased (`--start-period=120s`).
+- Corrected pgvector parameter binding to castable string literals:
+  - `lib/search/vector.search.ts`
+  - `lib/queue/processors/embedding.processor.ts`
+  - `tools/e2e_lifecycle_proof.js` chunk embedding update path.
+- Removed BOM from `tools/e2e_lifecycle_proof.js`.
+- Aligned proof payload with actual generator provenance:
+  - `generatedContentEvidence.sourceChunkIds` now uses `generated.sourceChunkIds` directly.
+- Improved RTL runner arg behavior:
+  - `tools/run_chromium_route_verification.js` now treats bare `--waitForNetworkIdle` as enabled with default `1200ms`.
+
 ## Validation Evidence
 
 - `npm run typecheck` -> PASS

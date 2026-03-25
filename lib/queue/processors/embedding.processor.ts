@@ -1,13 +1,12 @@
-import { Prisma } from '@prisma/client'
 import prisma from '../../db/prisma'
 import { embedText } from '../../embeddings'
 
 export async function processEmbeddingJob(chunkId: string, text: string) {
   const vector = await embedText(text)
-  const vecSql = Prisma.sql`[${Prisma.join(vector.map((v) => Number(v)))}]`
+  const vecLiteral = `[${vector.map((v) => Number(v)).join(',')}]`
   await prisma.$executeRaw`
     UPDATE "KnowledgeChunk"
-    SET embedding = ${vecSql}::vector
+    SET embedding = ${vecLiteral}::vector
     WHERE id = ${chunkId}
   `
 }

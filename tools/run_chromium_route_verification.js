@@ -131,7 +131,10 @@ async function run() {
   const outPath = args.out || DEFAULT_OUT_PATH
   const screenshotDir = args.screenshotDir || DEFAULT_SCREENSHOT_DIR
   const routeTimeoutMs = Number(args.routeTimeoutMs || args.timeoutMs || process.env.RTL_ROUTE_TIMEOUT_MS || DEFAULT_ROUTE_TIMEOUT_MS)
-  const waitForNetworkIdleMs = Number(args.waitForNetworkIdle || process.env.RTL_WAIT_FOR_NETWORK_IDLE_MS || 0)
+  const waitForNetworkIdleRaw = args.waitForNetworkIdle || process.env.RTL_WAIT_FOR_NETWORK_IDLE_MS || '0'
+  const waitForNetworkIdleMs = waitForNetworkIdleRaw === 'true'
+    ? 1200
+    : Number(waitForNetworkIdleRaw)
   const email = args.email || process.env.ADMIN_EMAIL || 'admin@example.test'
   const password = args.password || process.env.ADMIN_PASSWORD || 'AdminPass123!'
   const dynamicRoutes = await loadDynamicAdminRoutes()
