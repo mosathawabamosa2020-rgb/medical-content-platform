@@ -113,6 +113,7 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/alerts:/etc/prometheus/alerts:ro
+      - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=7d
@@ -159,5 +160,6 @@ volumes:
   postgres_data:
   redis_data:
   minio_data:
+  prometheus_data:
   grafana_data:
   loki_data:

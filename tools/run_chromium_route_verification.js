@@ -49,7 +49,22 @@ function sanitizeRoute(route) {
 }
 
 async function ensureAuthState(browser, baseUrl, authPath, email, password) {
-  if (fs.existsSync(authPath)) return
+  if (fs.existsSync(authPath)) {
+    const validationContext = await browser.newContext({ storageState: authPath })
+    const validationPage = await validationContext.newPage()
+    try {
+      await validationPage.goto(`${baseUrl}/admin`, { waitUntil: 'domcontentloaded', timeout: 20000 })
+      const redirectedToSignin = validationPage.url().includes('/api/auth/signin')
+      if (!redirectedToSignin) {
+        await validationContext.close()
+        return
+      }
+    } catch {
+      // Regenerate storage state if validation fails.
+    }
+    await validationContext.close()
+    fs.rmSync(authPath, { force: true })
+  }
   if (!email || !password) {
     throw new Error(`Missing auth state at ${authPath}. Provide --email and --password to generate it.`)
   }
@@ -196,6 +211,10 @@ async function run() {
   fs.writeFileSync(outPath, JSON.stringify(payload, null, 2), 'utf8')
   console.log(`Wrote authenticated Chromium verification artifact: ${outPath}`)
   console.log(JSON.stringify(payload.summary, null, 2))
+  if (payload.summary.failed > 0) {
+    console.error(`Route verification failed: ${payload.summary.failed} route(s) failed.`)
+    process.exit(1)
+  }
 }
 
 run().catch((err) => {

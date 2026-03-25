@@ -88,6 +88,28 @@ Scope: Execute verification-team directives for A-2, B-1, B-2, C-1, C-2, C-3 and
 - Updated RTL runner interface compatibility:
   - `tools/run_chromium_route_verification.js` now accepts `--routeTimeoutMs`, `--waitForNetworkIdle`, and `BASE_URL` env.
 
+10. Full-platform verification response implementation (2026-03-25 pass)
+- Security/runtime SQL hardening:
+  - Removed remaining runtime raw-unsafe usage from:
+    - `lib/search/vector.search.ts`
+    - `lib/services/retrieval/retrieve.ts`
+    - `lib/queue/processors/embedding.processor.ts`
+  - Confirmed with grep: no `$queryRawUnsafe`/`$executeRawUnsafe` under `lib/**`.
+- Embedding service hardening:
+  - `lib/embedding-service/requirements.txt` bumped to `fastapi==0.116.1`.
+  - `lib/embedding-service/Dockerfile` now runs as non-root (`appuser`) and includes in-image `HEALTHCHECK`.
+- Monitoring provisioning improvements:
+  - `docker-compose.yml` adds `prometheus_data` persistence volume mount.
+  - Added Grafana dashboard provider:
+    - `monitoring/grafana/dashboards/dashboards.yml`
+- Tooling robustness:
+  - `tools/run_chromium_route_verification.js` now validates existing auth state before reuse and exits non-zero when any route fails.
+  - `tools/e2e_lifecycle_proof.js` now enforces hard gates (status/retrieval/ownership checks) and validates cited chunk embeddings.
+- Documentation corrections:
+  - `.env.example` phase-2 vars reverted to opt-in commented placeholders.
+  - `docs/02-validation/EMBEDDING_MIGRATION_RUNBOOK.md` updated with concrete SQL/reindex steps and `.js` tool references.
+  - `docs/adr/ADR-010-pages-router-retention.md` heading spacing adjusted for markdownlint.
+
 ## Validation Evidence
 
 - `npm run typecheck` -> PASS
