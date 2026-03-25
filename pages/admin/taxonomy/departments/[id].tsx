@@ -11,3 +11,5 @@ export default function DepartmentDetailPage() {
   )
 }
 
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../../lib/auth/requireAdminServerSideProps'

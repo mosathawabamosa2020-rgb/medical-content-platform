@@ -67,3 +67,5 @@ export default function Dashboard() {
     </div>
   )
 }
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../lib/auth/requireAdminServerSideProps'

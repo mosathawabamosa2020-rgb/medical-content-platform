@@ -21,7 +21,7 @@ export async function retrieveVectorCandidates(
   const vectorStart = Date.now()
 
   const lightweight: Array<{ id: string; referenceId: string; similarity: number }> = await prisma.$transaction(async (tx: any) => {
-    await tx.$executeRawUnsafe(`SET LOCAL ivfflat.probes = ${ivfProbe}`)
+    await tx.$executeRaw`SELECT set_config('ivfflat.probes', ${String(ivfProbe)}, true)`
 
     if (deviceId) {
       return tx.$queryRaw`
@@ -75,23 +75,36 @@ export async function retrieveVectorCandidates(
   const dbVectorMs = Date.now() - vectorStart
 
   const hydrationStart = Date.now()
-  const ids = lightweight.map((r) => `'${r.id}'`).join(',')
-  const details: RetrievalCandidate[] = ids.length
-    ? await prisma.$queryRawUnsafe(`
-      SELECT
-        s.id,
-        s."referenceId" as "referenceId",
-        s.content as "pageContent",
-        r."deviceId" as "deviceId",
-        r."sourceReliabilityScore" as "sourceReliabilityScore",
-        r."uploadedAt" as "uploadedAt",
-        r."sourceUrl" as "sourceUrl",
-        s.title as title
-      FROM "Section" s
-      JOIN "Reference" r ON r.id = s."referenceId"
-      WHERE s.id IN (${ids})
-    `)
+  const ids = lightweight.map((r) => r.id)
+  const detailsRaw = ids.length
+    ? await prisma.section.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        referenceId: true,
+        content: true,
+        title: true,
+        reference: {
+          select: {
+            deviceId: true,
+            sourceReliabilityScore: true,
+            uploadedAt: true,
+            sourceUrl: true,
+          },
+        },
+      },
+    })
     : []
+  const details: RetrievalCandidate[] = detailsRaw.map((row: any) => ({
+    id: row.id,
+    referenceId: row.referenceId,
+    pageContent: row.content,
+    deviceId: row.reference?.deviceId,
+    sourceReliabilityScore: row.reference?.sourceReliabilityScore,
+    uploadedAt: row.reference?.uploadedAt,
+    sourceUrl: row.reference?.sourceUrl,
+    title: row.title,
+  }))
   const hydrationMs = Date.now() - hydrationStart
 
   const byId = new Map<string, RetrievalCandidate>()

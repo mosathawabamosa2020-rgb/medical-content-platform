@@ -11,3 +11,5 @@ export default function ContentDetailPage() {
   )
 }
 
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

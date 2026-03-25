@@ -61,3 +61,5 @@ export default function IngestionMonitor() {
     </div>
   )
 }
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../lib/auth/requireAdminServerSideProps'

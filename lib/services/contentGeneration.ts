@@ -9,7 +9,7 @@ const MAX_CONTEXT_CHARS = 14_000
 const MAX_OUTPUT_CHARS = 2_000
 
 type ScientificKey = 'definition' | 'workingPrinciple' | 'components' | 'advantages' | 'limitations' | 'useCases'
-type ContextItem = { text: string; referenceId: string }
+type ContextItem = { text: string; referenceId: string; chunkId?: string }
 
 const CATEGORY_RULES: Array<{ key: ScientificKey; patterns: RegExp[] }> = [
   { key: 'definition', patterns: [/definition|is a|defined as|describes/i] },
@@ -37,7 +37,7 @@ function sanitizeContext(text: string): string {
   return out.replace(/\s+/g, ' ').trim()
 }
 
-function assembleContext(results: Array<{ snippet: string; reference: { id: string } }>) {
+function assembleContext(results: Array<{ snippet: string; reference: { id: string }; chunkId?: string }>) {
   const selected: ContextItem[] = []
   const seenRef = new Map<string, number>()
   let usedChars = 0
@@ -50,7 +50,7 @@ function assembleContext(results: Array<{ snippet: string; reference: { id: stri
     if (!clean) continue
     if (usedChars + clean.length > MAX_CONTEXT_CHARS) break
     seenRef.set(item.reference.id, refCount + 1)
-    selected.push({ text: clean, referenceId: item.reference.id })
+    selected.push({ text: clean, referenceId: item.reference.id, chunkId: item.chunkId })
     usedChars += clean.length
   }
   return selected
@@ -151,7 +151,7 @@ function buildImagePrompt(topic: string, scientific: ReturnType<typeof classifyS
 
 export async function buildGeneratedContent(
   input: GenerateContentInput,
-  retrievalResults: Array<{ snippet: string; reference: { id: string; title: string | null } }>
+  retrievalResults: Array<{ snippet: string; reference: { id: string; title: string | null }; chunkId?: string }>
 ) {
   const safety = safetyValidate(input.topic)
   if (!safety.ok) {
@@ -167,10 +167,12 @@ export async function buildGeneratedContent(
       imagePrompt: null as string | null,
       reel: null as null | { durationSec: number; text: string; breakdown: Array<{ at: string; text: string; referenceIds: string[] }> },
       citationTrace: [] as Array<{ paragraph: string; referenceIds: string[] }>,
+      sourceChunkIds: [] as string[],
     }
   }
 
   const context = assembleContext(retrievalResults)
+  const sourceChunkIds = Array.from(new Set(context.map((x) => x.chunkId).filter(Boolean))) as string[]
   const contextText = context.map((x) => x.text).join(' ')
   const hashtags = hashTagsFromTopic(input.topic)
   const scientific = classifyScientificBlocks(context)
@@ -229,5 +231,6 @@ export async function buildGeneratedContent(
     imagePrompt,
     reel,
     citationTrace: citationTrace.filter((c) => c.referenceIds.length > 0),
+    sourceChunkIds,
   }
 }

@@ -39,3 +39,5 @@ export default function VerificationQueue() {
     </div>
   )
 }
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

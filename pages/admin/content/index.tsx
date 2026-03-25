@@ -7,3 +7,5 @@ export default function ContentTasksPage() {
   )
 }
 
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

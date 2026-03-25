@@ -1,63 +1,56 @@
 # E2E Ingestion Proof Report
-Date: 2026-03-23
+Date: 2026-03-23 (updated 2026-03-24)
 
 ## Objective
-Demonstrate end-to-end lifecycle evidence:
-- Reference upload/ingestion
-- Chunk creation and embedding
-- Verification approval
-- Retrieval
-- Generated content with citations
+Demonstrate end-to-end lifecycle evidence after A-2 enum remediation:
+1. Create reference and ingestion sections.
+2. Approve verification workflow.
+3. Validate retrieval after approval.
+4. Produce generated content with source linkage.
+5. Capture bilingual query evidence.
 
-## Execution Log
-1. Infrastructure startup
-   - Command: `docker compose up -d postgres redis`
-   - Result: PASS (containers started)
+## Execution
+1. `docker compose up -d postgres redis minio`
+2. `npx prisma migrate deploy`
+3. `npx prisma generate`
+4. `node tools/create_admin.js --email admin@example.test --password AdminPass123! --name "Platform Admin"`
+5. `node tools/e2e_lifecycle_proof.js`
 
-2. Migration baseline check
-   - Command: `npm run db:migrate:deploy`
-   - Result: PASS (no pending migrations)
+## Runtime Evidence (Latest Successful Run)
+- Generated at: `2026-03-24T17:33:08.309Z`
+- Token: `e2e-proof-1774373583665`
+- Created reviewer ID: `cmn4w7wmz0000s3p6dvx626u9`
+- Created device ID: `cmn4w7x160001s3p6yhfnrio1`
+- Created reference ID: `cmn4w7x5g0004s3p6f5oblzw5`
+- Created generated content ID: `cmn4w7yzg0009s3p634wiv2da`
+- Created section IDs:
+  - `sec-1774373583665-1`
+  - `sec-1774373583665-2`
+  - `sec-1774373583665-3`
+  - `sec-1774373583665-4`
+  - `sec-1774373583665-5`
+- Section count for created reference: `5`
+- Verification decision result: `ok`
+- Post-approval reference status: `verified`
+- Retrieval before approval: `0`
+- Retrieval after approval: `4`
 
-3. E2E lifecycle proof script
-   - Command: `node tools/e2e_lifecycle_proof.js`
-   - Result: FAIL
-   - Failure:
-     - `type "public.UserRole" does not exist`
-     - Indicates runtime schema mismatch between current DB state and expected Prisma model.
+## Bilingual Retrieval Evidence
+- Arabic query token: `огибЩ`
+- Post-approval bilingual hits: `3`
+- Sample returned English snippet:
+  - `English explanation: catheter insertion workflow aligned with огибЩ terminology.`
 
-4. Schema sync attempt
-   - Command: `npm run db:push`
-   - Result: FAIL
-   - Failure:
-     - `column "fts_arabic" of relation "KnowledgeChunk" is a generated column`
-     - Current DB state requires a controlled/manual remediation path rather than direct push.
+## Generated Content Citation Evidence
+- Generated content ID: `cmn4w7yzg0009s3p634wiv2da`
+- Source reference IDs:
+  - `cmn4w7x5g0004s3p6f5oblzw5`
+- Source chunk IDs:
+  - Captured in `generatedContentEvidence.sourceChunkIds` inside `artifacts/e2e_lifecycle_proof.json`
 
-## Supporting Evidence
-- Script used: `tools/e2e_lifecycle_proof.js`
-- Error signatures captured from execution:
-  - Prisma `UserRole` enum missing.
-  - Prisma push blocked on generated-column expression handling for `fts_arabic`.
+## Artifacts
+- Script: `tools/e2e_lifecycle_proof.js`
+- Output artifact: `artifacts/e2e_lifecycle_proof.json`
 
-## Current Status
-- End-to-end live proof is **blocked** by database schema-state drift in the local runtime.
-- The application code path is healthy at compile/test/build level, but DB runtime needs reconciliation before live lifecycle proof can be completed.
-
-## What Is Ready
-- `/api/metrics` endpoint is implemented and tested.
-- Embedding fallback observability (`EMBED_FALLBACK_ACTIVATED`) is implemented and tested.
-- Storage adapter canonicalization is complete and validated.
-- Source adapters now share retry/backoff/rate-limit policy logic.
-
-## Required Next Step To Unblock E2E Proof
-1. Reconcile DB schema baseline against Prisma models (enum/type + generated-column migration strategy).
-2. Re-run `tools/e2e_lifecycle_proof.js`.
-3. Capture final artifact with:
-   - reference IDs
-   - approved chunk counts (>= 5)
-   - bilingual retrieval evidence
-   - generated content citation IDs
-
-## Verification-Team Question
-Please confirm the canonical recovery path for this repository when DB schema and migration history diverge:
-- Option A: Fresh reset and full replay of approved migrations.
-- Option B: Manual patch migration to align existing DB without reset.
+## Status
+E2E lifecycle proof is unblocked and executed successfully with live IDs, post-approval retrieval uplift, and bilingual evidence.

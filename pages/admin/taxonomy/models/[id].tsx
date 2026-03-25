@@ -11,3 +11,5 @@ export default function DeviceModelDetailPage() {
   )
 }
 
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../../lib/auth/requireAdminServerSideProps'

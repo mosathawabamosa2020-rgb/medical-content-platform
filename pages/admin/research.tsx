@@ -66,3 +66,5 @@ export default function Research() {
     </main>
   )
 }
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../lib/auth/requireAdminServerSideProps'

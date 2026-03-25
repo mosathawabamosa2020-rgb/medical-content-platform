@@ -3,11 +3,12 @@ import { embedText } from '../../embeddings'
 
 export async function processEmbeddingJob(chunkId: string, text: string) {
   const vector = await embedText(text)
-  await prisma.$executeRawUnsafe(
-    `UPDATE "KnowledgeChunk" SET embedding = $1::vector WHERE id = $2`,
-    `[${vector.join(',')}]`,
-    chunkId
-  )
+  const vecLiteral = `[${vector.map((v) => Number(v)).join(',')}]`
+  await prisma.$executeRaw`
+    UPDATE "KnowledgeChunk"
+    SET embedding = ${vecLiteral}::vector
+    WHERE id = ${chunkId}
+  `
 }
 
 

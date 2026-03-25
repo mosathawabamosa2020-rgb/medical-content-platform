@@ -4,7 +4,7 @@ describe('retrieval engine', () => {
   test('uses semantic path and enforces verified-only SQL clause', async () => {
     const seenSql: string[] = []
     const tx = {
-      $executeRawUnsafe: jest.fn(() => Promise.resolve(1)),
+      $executeRaw: jest.fn(() => Promise.resolve(1)),
       $queryRaw: jest.fn((strings: TemplateStringsArray) => {
         seenSql.push(strings.join(' '))
         return Promise.resolve([
@@ -24,20 +24,24 @@ describe('retrieval engine', () => {
     }
     const prisma = {
       $transaction: jest.fn(async (fn: any) => fn(tx)),
-      $queryRawUnsafe: jest.fn(() =>
-        Promise.resolve([
-          {
-            id: 'r1',
-            referenceId: 'ref1',
-            pageContent: 'verified content for cardiac monitor',
-            deviceId: 'd1',
-            sourceReliabilityScore: 0.8,
-            uploadedAt: new Date(),
-            sourceUrl: 'https://example.com',
-            title: 'Ref 1',
-          },
-        ])
-      ),
+      section: {
+        findMany: jest.fn(() =>
+          Promise.resolve([
+            {
+              id: 'r1',
+              referenceId: 'ref1',
+              content: 'verified content for cardiac monitor',
+              title: 'Ref 1',
+              reference: {
+                deviceId: 'd1',
+                sourceReliabilityScore: 0.8,
+                uploadedAt: new Date(),
+                sourceUrl: 'https://example.com',
+              },
+            },
+          ])
+        ),
+      },
     }
 
     const out = await runRetrievalQuery(

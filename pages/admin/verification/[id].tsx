@@ -11,3 +11,5 @@ export default function VerificationDetailPage() {
   )
 }
 
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

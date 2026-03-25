@@ -63,6 +63,9 @@ jobs:
       - name: Prisma migrate deploy
         run: npx prisma migrate deploy
 
+      - name: Prisma migrate status
+        run: npx prisma migrate status --schema=prisma/schema.prisma
+
       - name: Typecheck
         run: npm run typecheck
 

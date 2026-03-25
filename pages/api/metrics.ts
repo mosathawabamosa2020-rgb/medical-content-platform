@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import {
   buildPrometheusMetricsText,
+  getApiErrorRate,
   getEmbeddingFallbackActivatedTotal,
   getQueueDepthSnapshot,
   getRetrievalLatencySnapshot,
@@ -13,6 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const payload = buildPrometheusMetricsText({
     ...queues,
     ...retrieval,
+    api_error_rate: getApiErrorRate(),
     embedding_fallback_activated_total: getEmbeddingFallbackActivatedTotal(),
   })
 

@@ -7,3 +7,5 @@ export default function ContentCreatePage() {
   )
 }
 
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../../lib/auth/requireAdminServerSideProps'

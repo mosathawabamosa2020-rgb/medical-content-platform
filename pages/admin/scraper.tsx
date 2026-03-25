@@ -71,3 +71,5 @@ export default function ScraperAdmin() {
     </div>
   )
 }
+
+export { requireAdminServerSideProps as getServerSideProps } from '../../lib/auth/requireAdminServerSideProps'

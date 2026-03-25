@@ -11,12 +11,14 @@ jest.mock('../lib/observability/metrics', () => ({
     retrieval_latency_ms_p95: 95,
   })),
   getEmbeddingFallbackActivatedTotal: jest.fn(() => 7),
+  getApiErrorRate: jest.fn(() => 0),
   buildPrometheusMetricsText: jest.fn(() => [
     'queue_depth_pdf 2',
     'queue_depth_embed 3',
     'queue_depth_search 5',
     'retrieval_latency_ms_p50 42',
     'retrieval_latency_ms_p95 95',
+    'api_error_rate 0',
     'embedding_fallback_activated_total 7',
   ].join('\n')),
 }))
@@ -34,6 +36,7 @@ describe('/api/metrics', () => {
     expect(body).toContain('queue_depth_search')
     expect(body).toContain('retrieval_latency_ms_p50')
     expect(body).toContain('retrieval_latency_ms_p95')
+    expect(body).toContain('api_error_rate')
     expect(body).toContain('embedding_fallback_activated_total')
   })
 
