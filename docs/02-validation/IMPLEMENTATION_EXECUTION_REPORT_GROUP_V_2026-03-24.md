@@ -82,6 +82,9 @@ Scope: Execute verification-team directives for A-2, B-1, B-2, C-1, C-2, C-3 and
     - `EMBEDDING_SERVICE_URL=http://localhost:8001`
     - `EMBEDDING_MODEL=BAAI/bge-m3`
     - `EMBEDDING_DIMENSIONS=1024`
+- Improved embedding-service containerization:
+  - Added `lib/embedding-service/Dockerfile` so dependencies are installed at image build time (not every container start).
+  - Updated `docker-compose.yml` `embedding-service` to use Dockerfile build.
 - Updated RTL runner interface compatibility:
   - `tools/run_chromium_route_verification.js` now accepts `--routeTimeoutMs`, `--waitForNetworkIdle`, and `BASE_URL` env.
 
