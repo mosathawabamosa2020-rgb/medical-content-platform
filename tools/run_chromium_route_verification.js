@@ -77,6 +77,20 @@ async function ensureAuthState(browser, baseUrl, authPath, email, password) {
   await page.click('button[type="submit"]')
   await page.waitForLoadState('networkidle', { timeout: 30000 })
   await page.waitForURL((url) => !url.toString().includes('/api/auth/signin'), { timeout: 30000 })
+  const cookieDeadline = Date.now() + 30000
+  let hasSessionCookie = false
+  while (Date.now() < cookieDeadline) {
+    const cookies = await context.cookies(baseUrl)
+    hasSessionCookie = cookies.some(({ name }) =>
+      name === 'next-auth.session-token' || name === '__Secure-next-auth.session-token'
+    )
+    if (hasSessionCookie) break
+    await page.waitForTimeout(500)
+  }
+  if (!hasSessionCookie) {
+    await context.close()
+    throw new Error('Authentication failed: no NextAuth session cookie was created.')
+  }
 
   fs.mkdirSync(path.dirname(authPath), { recursive: true })
   await context.storageState({ path: authPath })
@@ -170,8 +184,9 @@ async function run() {
         await page.waitForLoadState('networkidle', { timeout: waitForNetworkIdleMs })
       }
       status = response ? response.status() : null
-      ok = Boolean(response && response.ok())
       finalUrl = page.url()
+      const redirectedToSignin = finalUrl.includes('/api/auth/signin')
+      ok = Boolean(response && response.ok() && !redirectedToSignin)
       screenshot = path.join(screenshotDir, `${sanitizeRoute(route)}.png`)
       await page.screenshot({ path: screenshot, fullPage: true })
     } catch (error) {
@@ -214,8 +229,8 @@ async function run() {
   fs.writeFileSync(outPath, JSON.stringify(payload, null, 2), 'utf8')
   console.log(`Wrote authenticated Chromium verification artifact: ${outPath}`)
   console.log(JSON.stringify(payload.summary, null, 2))
-  if (payload.summary.failed > 0) {
-    console.error(`Route verification failed: ${payload.summary.failed} route(s) failed.`)
+  if (payload.summary.failed > 0 || payload.summary.redirectedToSignin > 0) {
+    console.error(`Route verification failed: ${payload.summary.failed} failed, ${payload.summary.redirectedToSignin} redirected to signin.`)
     process.exit(1)
   }
 }

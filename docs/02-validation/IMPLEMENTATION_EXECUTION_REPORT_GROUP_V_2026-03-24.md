@@ -127,6 +127,19 @@ Scope: Execute verification-team directives for A-2, B-1, B-2, C-1, C-2, C-3 and
 - Improved RTL runner arg behavior:
   - `tools/run_chromium_route_verification.js` now treats bare `--waitForNetworkIdle` as enabled with default `1200ms`.
 
+12. Follow-up verifier deltas (2026-03-25 third pass)
+- Strengthened authenticated route audit guarantees:
+  - `tools/run_chromium_route_verification.js` now:
+    - validates NextAuth session cookie presence before persisting auth state,
+    - treats `/api/auth/signin` landings as failed route checks,
+    - exits non-zero when `redirectedToSignin > 0` (in addition to failed route count).
+- Embedding dependency hardening and consistency:
+  - `lib/embedding-service/requirements.txt` now pins:
+    - `fastapi==0.116.2`
+    - `starlette>=0.49.1`
+    - `torch==2.2.2`
+  - `lib/embedding-service/Dockerfile` now installs all requirements from `requirements.txt` via CPU wheel index in a single step.
+
 ## Validation Evidence
 
 - `npm run typecheck` -> PASS
